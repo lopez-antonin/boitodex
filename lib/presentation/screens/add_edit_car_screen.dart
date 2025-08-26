@@ -182,6 +182,7 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Photo
                 ImagePickerWidget(
                   imageBytes: _photoBytes,
                   onImageSelected: _onImageSelected,
@@ -191,6 +192,8 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
                       : null,
                 ),
                 const SizedBox(height: 24),
+
+                // Marque
                 TextFormField(
                   controller: _brandController,
                   decoration: const InputDecoration(
@@ -202,6 +205,8 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
                   textCapitalization: TextCapitalization.words,
                 ),
                 const SizedBox(height: 16),
+
+                // Forme
                 TextFormField(
                   controller: _shapeController,
                   decoration: const InputDecoration(
@@ -213,6 +218,8 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
                   textCapitalization: TextCapitalization.words,
                 ),
                 const SizedBox(height: 16),
+
+                // Nom
                 TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
@@ -224,6 +231,8 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
                   textCapitalization: TextCapitalization.words,
                 ),
                 const SizedBox(height: 16),
+
+                // Options (Tirelire et Musique)
                 Card(
                   child: Column(
                     children: [
@@ -245,34 +254,54 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _isLoading ? null : _save,
-                        icon: const Icon(Icons.save),
-                        label: const Text('Enregistrer'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.cancel),
-                        label: const Text('Annuler'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 100), // Espace pour les boutons fixes
               ],
             ),
+          ),
+        ),
+        // Boutons fixes en bas
+        bottomNavigationBar: Container(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(context).padding.bottom + 16,
+          ),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                spreadRadius: 1,
+                blurRadius: 4,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _save,
+                  icon: const Icon(Icons.save),
+                  label: const Text('Enregistrer'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.cancel),
+                  label: const Text('Annuler'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shimmer/shimmer.dart';
 import '../../data/models/car_model.dart';
 import '../../core/constants/app_constants.dart';
 
@@ -48,6 +46,31 @@ class CarListItem extends StatelessWidget {
     );
   }
 
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Supprimer la voiture'),
+        content: Text('Voulez-vous vraiment supprimer "${car.name}" ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && onDelete != null) {
+      onDelete!();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -78,41 +101,50 @@ class CarListItem extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
               children: [
-                if (car.isPiggyBank) ...[
-                  Icon(
-                    Icons.savings,
-                    size: 16,
-                    color: Colors.amber[700],
+                if (car.isPiggyBank)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.savings,
+                        size: 16,
+                        color: Colors.amber[700],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Tirelire',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.amber[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Tirelire',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.amber[700],
-                      fontWeight: FontWeight.w500,
-                    ),
+                if (car.playsMusic)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.music_note,
+                        size: 16,
+                        color: Colors.purple[700],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Musique',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.purple[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                  if (car.playsMusic) const SizedBox(width: 12),
-                ],
-                if (car.playsMusic) ...[
-                  Icon(
-                    Icons.music_note,
-                    size: 16,
-                    color: Colors.purple[700],
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Musique',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.purple[700],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
               ],
             ),
           ],
@@ -120,7 +152,7 @@ class CarListItem extends StatelessWidget {
         trailing: onDelete != null
             ? IconButton(
           icon: const Icon(Icons.delete_outline),
-          onPressed: onDelete,
+          onPressed: () => _confirmDelete(context),
           tooltip: 'Supprimer',
           color: Colors.red[400],
         )

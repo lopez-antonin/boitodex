@@ -62,29 +62,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _confirmDelete(CarModel car) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Supprimer la voiture'),
-        content: Text('Voulez-vous vraiment supprimer "${car.name}" ?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Supprimer'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      await ref.read(carNotifierProvider.notifier).deleteCar(car.id!);
-    }
+  // FONCTION CORRIGÉE pour la suppression
+  Future<void> _handleDelete(CarModel car) async {
+    await ref.read(carNotifierProvider.notifier).deleteCar(car.id!);
   }
 
   Future<void> _exportCollection() async {
@@ -222,16 +202,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         subtitle: carState.filter.hasActiveFilters
             ? 'Aucune voiture ne correspond aux filtres'
             : 'Commencez par ajouter votre première voiture',
-        actionText: carState.filter.hasActiveFilters ? 'Effacer les filtres' : 'Ajouter une voiture',
+        actionText: carState.filter.hasActiveFilters ? 'Effacer les filtres' : null,
         onAction: carState.filter.hasActiveFilters
             ? () => ref.read(carNotifierProvider.notifier).clearFilters()
-            : () async {
-          await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const AddEditCarScreen(),
-            ),
-          );
-        },
+            : null,
       );
     }
 
@@ -265,7 +239,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     );
                   },
-                  onDelete: () => _confirmDelete(car),
+                  onDelete: () => _handleDelete(car), // APPEL CORRIGÉ
                 ),
               ),
             ),

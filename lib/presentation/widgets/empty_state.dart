@@ -46,20 +46,7 @@ class EmptyState extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            if (actionText != null && onAction != null) ...[
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: onAction,
-                icon: const Icon(Icons.add),
-                label: Text(actionText!),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-              ),
-            ],
+            // Supprimer le bouton d'action pour éviter la duplication avec le FAB
           ],
         ),
       ),

@@ -89,57 +89,64 @@ class _SearchFilterBarState extends State<SearchFilterBar> {
             onChanged: _onSearchChanged,
           ),
           const SizedBox(height: 16),
-          // Filters
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: widget.filter.brand,
-                  decoration: const InputDecoration(
-                    labelText: 'Marque',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                  items: [
-                    const DropdownMenuItem<String>(
-                      value: null,
-                      child: Text('Toutes les marques'),
+          // Filters - Layout flexible
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: DropdownButtonFormField<String>(
+                    value: widget.filter.brand,
+                    decoration: const InputDecoration(
+                      labelText: 'Marque',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     ),
-                    ...widget.brands.map((brand) => DropdownMenuItem<String>(
-                      value: brand,
-                      child: Text(brand),
-                    )),
-                  ],
-                  onChanged: (value) {
-                    widget.onFilterChanged(widget.filter.copyWith(brand: value));
-                  },
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  value: widget.filter.shape,
-                  decoration: const InputDecoration(
-                    labelText: 'Forme',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    isExpanded: true, // Important pour éviter l'overflow
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: null,
+                        child: Text('Toutes', overflow: TextOverflow.ellipsis),
+                      ),
+                      ...widget.brands.map((brand) => DropdownMenuItem<String>(
+                        value: brand,
+                        child: Text(brand, overflow: TextOverflow.ellipsis),
+                      )),
+                    ],
+                    onChanged: (value) {
+                      widget.onFilterChanged(widget.filter.copyWith(brand: value));
+                    },
                   ),
-                  items: [
-                    const DropdownMenuItem<String>(
-                      value: null,
-                      child: Text('Toutes les formes'),
-                    ),
-                    ...widget.shapes.map((shape) => DropdownMenuItem<String>(
-                      value: shape,
-                      child: Text(shape),
-                    )),
-                  ],
-                  onChanged: (value) {
-                    widget.onFilterChanged(widget.filter.copyWith(shape: value));
-                  },
                 ),
-              ),
-            ],
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 1,
+                  child: DropdownButtonFormField<String>(
+                    value: widget.filter.shape,
+                    decoration: const InputDecoration(
+                      labelText: 'Forme',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    ),
+                    isExpanded: true, // Important pour éviter l'overflow
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: null,
+                        child: Text('Toutes', overflow: TextOverflow.ellipsis),
+                      ),
+                      ...widget.shapes.map((shape) => DropdownMenuItem<String>(
+                        value: shape,
+                        child: Text(shape, overflow: TextOverflow.ellipsis),
+                      )),
+                    ],
+                    onChanged: (value) {
+                      widget.onFilterChanged(widget.filter.copyWith(shape: value));
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
           // Clear filters button
           if (widget.filter.hasActiveFilters) ...[

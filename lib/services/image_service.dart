@@ -20,12 +20,6 @@ class ImageServiceImpl implements ImageService {
   @override
   Future<Result<Uint8List>> pickFromGallery() async {
     try {
-      // Vérifier les permissions
-      final permissionResult = await requestPermissions();
-      if (!permissionResult.data!) {
-        return const Failure('Permissions requises pour accéder à la galerie');
-      }
-
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1600,
@@ -41,8 +35,6 @@ class ImageServiceImpl implements ImageService {
       final processedBytes = await ImageUtils.processImage(bytes);
 
       return Success(processedBytes);
-    } on PermissionException catch (e) {
-      return Failure(e.message);
     } on FileException catch (e) {
       return Failure(e.message);
     } catch (e) {
@@ -53,12 +45,6 @@ class ImageServiceImpl implements ImageService {
   @override
   Future<Result<Uint8List>> takePhoto() async {
     try {
-      // Vérifier les permissions
-      final permissionResult = await requestPermissions();
-      if (!permissionResult.data!) {
-        return const Failure('Permissions requises pour utiliser la caméra');
-      }
-
       final XFile? image = await _picker.pickImage(
         source: ImageSource.camera,
         maxWidth: 1600,
@@ -74,8 +60,6 @@ class ImageServiceImpl implements ImageService {
       final processedBytes = await ImageUtils.processImage(bytes);
 
       return Success(processedBytes);
-    } on PermissionException catch (e) {
-      return Failure(e.message);
     } on FileException catch (e) {
       return Failure(e.message);
     } catch (e) {
@@ -87,30 +71,49 @@ class ImageServiceImpl implements ImageService {
   Future<Result<bool>> requestPermissions() async {
     try {
       if (Platform.isAndroid) {
-        final cameraStatus = await Permission.camera.request();
-        final storageStatus = await Permission.photos.request();
+        // Pour Android 13+, utiliser photos au lieu de storage
+        final cameraStatus = await Permission.camera.status;
+        final photosStatus = await Permission.photos.status;
 
-        if (cameraStatus.isGranted && storageStatus.isGranted) {
-          return const Success(true);
-        } else {
-          throw const PermissionException('Permissions caméra et stockage requises');
+        if (!cameraStatus.isGranted) {
+          final newCameraStatus = await Permission.camera.request();
+          if (!newCameraStatus.isGranted) {
+            return const Failure('Permission caméra requise');
+          }
         }
+
+        if (!photosStatus.isGranted) {
+          final newPhotosStatus = await Permission.photos.request();
+          if (!newPhotosStatus.isGranted) {
+            return const Failure('Permission photos requise');
+          }
+        }
+
+        return const Success(true);
       } else if (Platform.isIOS) {
-        final cameraStatus = await Permission.camera.request();
-        final photosStatus = await Permission.photos.request();
+        final cameraStatus = await Permission.camera.status;
+        final photosStatus = await Permission.photos.status;
 
-        if (cameraStatus.isGranted && photosStatus.isGranted) {
-          return const Success(true);
-        } else {
-          throw const PermissionException('Permissions caméra et photos requises');
+        if (!cameraStatus.isGranted) {
+          final newCameraStatus = await Permission.camera.request();
+          if (!newCameraStatus.isGranted) {
+            return const Failure('Permission caméra requise');
+          }
         }
+
+        if (!photosStatus.isGranted) {
+          final newPhotosStatus = await Permission.photos.request();
+          if (!newPhotosStatus.isGranted) {
+            return const Failure('Permission photos requise');
+          }
+        }
+
+        return const Success(true);
       }
 
       return const Success(true);
-    } on PermissionException catch (e) {
-      return Failure(e.message);
     } catch (e) {
-      return Failure('Erreur lors de la vérification des permissions: ${e.toString()}');
+      return const Success(true); // Continuer sans permissions si erreur
     }
   }
 }
