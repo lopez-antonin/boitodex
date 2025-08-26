@@ -62,9 +62,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  // FONCTION CORRIGÉE pour la suppression
+  // FONCTION CORRIGÉE pour afficher le message de suppression
   Future<void> _handleDelete(CarModel car) async {
-    await ref.read(carNotifierProvider.notifier).deleteCar(car.id!);
+    try {
+      await ref.read(carNotifierProvider.notifier).deleteCar(car.id!);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Voiture supprimée'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ErrorSnackbar.show(context, 'Erreur lors de la suppression: ${e.toString()}');
+      }
+    }
   }
 
   Future<void> _exportCollection() async {
@@ -239,7 +253,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     );
                   },
-                  onDelete: () => _handleDelete(car), // APPEL CORRIGÉ
+                  onDelete: () => _handleDelete(car), // APPEL CORRIGÉ avec gestion du message
                 ),
               ),
             ),
