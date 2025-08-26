@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/providers.dart';
 import 'error_snackbar.dart';
-import 'image_crop_widget.dart';
 import '../../core/constants/app_constants.dart';
 
 class ImagePickerWidget extends ConsumerStatefulWidget {
@@ -36,7 +35,7 @@ class _ImagePickerWidgetState extends ConsumerState<ImagePickerWidget> {
     setState(() => _isLoading = false);
 
     if (result.isSuccess) {
-      await _showCropDialog(result.data!);
+      widget.onImageSelected(result.data!);
     } else {
       if (mounted) {
         ErrorSnackbar.show(context, result.error!);
@@ -53,23 +52,11 @@ class _ImagePickerWidgetState extends ConsumerState<ImagePickerWidget> {
     setState(() => _isLoading = false);
 
     if (result.isSuccess) {
-      await _showCropDialog(result.data!);
+      widget.onImageSelected(result.data!);
     } else {
       if (mounted) {
         ErrorSnackbar.show(context, result.error!);
       }
-    }
-  }
-
-  Future<void> _showCropDialog(Uint8List originalImageBytes) async {
-    final croppedImageBytes = await showDialog<Uint8List>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => ImageCropDialog(imageBytes: originalImageBytes),
-    );
-
-    if (croppedImageBytes != null) {
-      widget.onImageSelected(croppedImageBytes);
     }
   }
 
@@ -115,7 +102,7 @@ class _ImagePickerWidgetState extends ConsumerState<ImagePickerWidget> {
     if (_isLoading) {
       return Container(
         width: double.infinity,
-        height: 200,
+        height: 300,
         decoration: BoxDecoration(
           color: Colors.grey[100],
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
@@ -130,7 +117,9 @@ class _ImagePickerWidgetState extends ConsumerState<ImagePickerWidget> {
     if (widget.imageBytes != null && widget.imageBytes!.isNotEmpty) {
       return Container(
         width: double.infinity,
-        height: 200,
+        constraints: const BoxConstraints(
+          maxHeight: 400, // Hauteur maximale pour éviter que l'image prenne trop de place
+        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           border: Border.all(color: Colors.grey[300]!),
@@ -139,11 +128,13 @@ class _ImagePickerWidgetState extends ConsumerState<ImagePickerWidget> {
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           child: Stack(
             children: [
-              Image.memory(
-                widget.imageBytes!,
-                width: double.infinity,
-                height: double.infinity,
-                fit: BoxFit.cover,
+              // Image affichée en entier avec fit.contain
+              Center(
+                child: Image.memory(
+                  widget.imageBytes!,
+                  fit: BoxFit.contain, // Affiche l'image entière
+                  width: double.infinity,
+                ),
               ),
               Positioned(
                 top: 8,

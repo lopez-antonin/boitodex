@@ -23,7 +23,7 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
   final _brandController = TextEditingController();
   final _shapeController = TextEditingController();
   final _nameController = TextEditingController();
-  final _informationsController = TextEditingController(); // Nouveau contrôleur
+  final _informationsController = TextEditingController();
 
   bool _isPiggyBank = false;
   bool _playsMusic = false;
@@ -45,7 +45,7 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
     _brandController.dispose();
     _shapeController.dispose();
     _nameController.dispose();
-    _informationsController.dispose(); // Dispose du nouveau contrôleur
+    _informationsController.dispose();
     super.dispose();
   }
 
@@ -54,7 +54,7 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
     _brandController.text = car.brand;
     _shapeController.text = car.shape;
     _nameController.text = car.name;
-    _informationsController.text = car.informations ?? ''; // Nouveau champ
+    _informationsController.text = car.informations ?? '';
     _isPiggyBank = car.isPiggyBank;
     _playsMusic = car.playsMusic;
     _photoBytes = car.photo;
@@ -120,7 +120,7 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
         name: _nameController.text.trim(),
         informations: _informationsController.text.trim().isEmpty
             ? null
-            : _informationsController.text.trim(), // Nouveau champ
+            : _informationsController.text.trim(),
         isPiggyBank: _isPiggyBank,
         playsMusic: _playsMusic,
         photo: _photoBytes,
@@ -290,7 +290,7 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Informations - NOUVEAU CHAMP
+                // Informations
                 TextFormField(
                   controller: _informationsController,
                   decoration: const InputDecoration(
