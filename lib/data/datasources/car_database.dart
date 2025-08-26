@@ -2,9 +2,10 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../core/constants/app_constants.dart';
-import '../../core/errors/exceptions.dart';
+import '../../core/errors/exceptions.dart' as app_exceptions;
 import '../models/car_model.dart';
 import '../models/filter_model.dart';
+import 'package:uuid/uuid.dart';
 
 class CarDatabase {
   static final CarDatabase _instance = CarDatabase._internal();
@@ -30,7 +31,7 @@ class CarDatabase {
         onUpgrade: _onUpgrade,
       );
     } catch (e) {
-      throw DatabaseException('Erreur lors de l\'initialisation de la base de données: ${e.toString()}');
+      throw app_exceptions.DatabaseException('Erreur lors de l\'initialisation de la base de données: ${e.toString()}');
     }
   }
 
@@ -71,7 +72,7 @@ class CarDatabase {
         await db.update(
           'cars',
           {
-            'uuid': const Uuid().v4(),
+            'uuid': _generateUuid(),
             'created_at': now,
             'updated_at': now,
           },
@@ -89,7 +90,7 @@ class CarDatabase {
       final db = await database;
       return await db.insert('cars', car.toMap());
     } catch (e) {
-      throw DatabaseException('Erreur lors de l\'ajout de la voiture: ${e.toString()}');
+      throw app_exceptions.DatabaseException('Erreur lors de l\'ajout de la voiture: ${e.toString()}');
     }
   }
 
@@ -103,7 +104,7 @@ class CarDatabase {
         whereArgs: [car.id],
       );
     } catch (e) {
-      throw DatabaseException('Erreur lors de la mise à jour de la voiture: ${e.toString()}');
+      throw app_exceptions.DatabaseException('Erreur lors de la mise à jour de la voiture: ${e.toString()}');
     }
   }
 
@@ -116,7 +117,7 @@ class CarDatabase {
         whereArgs: [id],
       );
     } catch (e) {
-      throw DatabaseException('Erreur lors de la suppression de la voiture: ${e.toString()}');
+      throw app_exceptions.DatabaseException('Erreur lors de la suppression de la voiture: ${e.toString()}');
     }
   }
 
@@ -134,7 +135,7 @@ class CarDatabase {
       }
       return null;
     } catch (e) {
-      throw DatabaseException('Erreur lors de la récupération de la voiture: ${e.toString()}');
+      throw app_exceptions.DatabaseException('Erreur lors de la récupération de la voiture: ${e.toString()}');
     }
   }
 
@@ -198,7 +199,7 @@ class CarDatabase {
 
       return maps.map((m) => CarModel.fromMap(m)).toList();
     } catch (e) {
-      throw DatabaseException('Erreur lors de la récupération des voitures: ${e.toString()}');
+      throw app_exceptions.DatabaseException('Erreur lors de la récupération des voitures: ${e.toString()}');
     }
   }
 
@@ -230,7 +231,7 @@ class CarDatabase {
 
       return result.first['count'] as int? ?? 0;
     } catch (e) {
-      throw DatabaseException('Erreur lors du comptage des voitures: ${e.toString()}');
+      throw app_exceptions.DatabaseException('Erreur lors du comptage des voitures: ${e.toString()}');
     }
   }
 
@@ -245,7 +246,7 @@ class CarDatabase {
           .where((s) => s.isNotEmpty)
           .toList();
     } catch (e) {
-      throw DatabaseException('Erreur lors de la récupération des marques: ${e.toString()}');
+      throw app_exceptions.DatabaseException('Erreur lors de la récupération des marques: ${e.toString()}');
     }
   }
 
@@ -260,7 +261,7 @@ class CarDatabase {
           .where((s) => s.isNotEmpty)
           .toList();
     } catch (e) {
-      throw DatabaseException('Erreur lors de la récupération des formes: ${e.toString()}');
+      throw app_exceptions.DatabaseException('Erreur lors de la récupération des formes: ${e.toString()}');
     }
   }
 
@@ -270,7 +271,7 @@ class CarDatabase {
       final maps = await db.query('cars', orderBy: 'created_at ASC');
       return maps.map((m) => CarModel.fromMap(m)).toList();
     } catch (e) {
-      throw DatabaseException('Erreur lors de l\'export des voitures: ${e.toString()}');
+      throw app_exceptions.DatabaseException('Erreur lors de l\'export des voitures: ${e.toString()}');
     }
   }
 
@@ -279,5 +280,9 @@ class CarDatabase {
       await _database!.close();
       _database = null;
     }
+  }
+
+  String _generateUuid() {
+    return const Uuid().v4();
   }
 }

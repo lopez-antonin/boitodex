@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/models/filter_model.dart';
+import 'dart:async';
 
 class SearchFilterBar extends StatefulWidget {
   final List<String> brands;

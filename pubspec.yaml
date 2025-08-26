@@ -1,5 +1,8 @@
 name: boitodex
-description: Application de gestion de collection de voitures
+description: Une application Flutter pour collectionner les voitures miniatures.
+
+publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
@@ -13,40 +16,35 @@ dependencies:
     sdk: flutter
 
   # State Management
-  flutter_riverpod: ^2.4.9
+  flutter_riverpod: ^2.4.10
 
   # Database
   sqflite: ^2.3.0
   path: ^1.8.3
 
-  # Image handling
+  # Images
   image_picker: ^1.0.4
   image: ^4.1.3
-
-  # File operations
-  path_provider: ^2.1.1
-  share_plus: ^7.2.1
-  file_picker: ^6.1.1
+  cached_network_image: ^3.3.1
 
   # Permissions
   permission_handler: ^11.1.0
 
-  # UI
-  cached_network_image: ^3.3.0
-  shimmer: ^3.0.0
-  flutter_staggered_animations: ^1.1.1
+  # File handling (REMPLACÉ file_picker par share_plus uniquement)
+  path_provider: ^2.1.1
+  share_plus: ^7.2.1
 
   # Utils
-  intl: ^0.20.2
   uuid: ^4.2.1
+
+  # UI
+  shimmer: ^3.0.0
+  flutter_staggered_animations: ^1.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
-  mockito: ^5.4.2
-  build_runner: ^2.4.7
 
 flutter:
   uses-material-design: true
-  generate: true

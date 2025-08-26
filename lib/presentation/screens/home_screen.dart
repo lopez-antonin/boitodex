@@ -12,6 +12,7 @@ import '../widgets/empty_state.dart';
 import 'add_edit_car_screen.dart';
 import '../../data/models/car_model.dart';
 import '../../data/models/filter_model.dart';
+import '../providers/car_notifier.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
