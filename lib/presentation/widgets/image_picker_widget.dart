@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/providers.dart';
 import 'error_snackbar.dart';
+import 'image_crop_widget.dart';
 import '../../core/constants/app_constants.dart';
 
 class ImagePickerWidget extends ConsumerStatefulWidget {
@@ -35,7 +36,7 @@ class _ImagePickerWidgetState extends ConsumerState<ImagePickerWidget> {
     setState(() => _isLoading = false);
 
     if (result.isSuccess) {
-      widget.onImageSelected(result.data!);
+      await _showCropDialog(result.data!);
     } else {
       if (mounted) {
         ErrorSnackbar.show(context, result.error!);
@@ -52,11 +53,23 @@ class _ImagePickerWidgetState extends ConsumerState<ImagePickerWidget> {
     setState(() => _isLoading = false);
 
     if (result.isSuccess) {
-      widget.onImageSelected(result.data!);
+      await _showCropDialog(result.data!);
     } else {
       if (mounted) {
         ErrorSnackbar.show(context, result.error!);
       }
+    }
+  }
+
+  Future<void> _showCropDialog(Uint8List originalImageBytes) async {
+    final croppedImageBytes = await showDialog<Uint8List>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ImageCropDialog(imageBytes: originalImageBytes),
+    );
+
+    if (croppedImageBytes != null) {
+      widget.onImageSelected(croppedImageBytes);
     }
   }
 

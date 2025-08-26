@@ -7,6 +7,7 @@ class CarModel {
   final String brand;
   final String shape;
   final String name;
+  final String? informations; // Nouveau champ
   final bool isPiggyBank;
   final bool playsMusic;
   final Uint8List? photo;
@@ -19,6 +20,7 @@ class CarModel {
     required this.brand,
     required this.shape,
     required this.name,
+    this.informations, // Nouveau champ optionnel
     required this.isPiggyBank,
     required this.playsMusic,
     this.photo,
@@ -34,6 +36,7 @@ class CarModel {
     String? brand,
     String? shape,
     String? name,
+    String? informations, // Nouveau champ
     bool? isPiggyBank,
     bool? playsMusic,
     Uint8List? photo,
@@ -46,6 +49,7 @@ class CarModel {
       brand: brand ?? this.brand,
       shape: shape ?? this.shape,
       name: name ?? this.name,
+      informations: informations ?? this.informations, // Nouveau champ
       isPiggyBank: isPiggyBank ?? this.isPiggyBank,
       playsMusic: playsMusic ?? this.playsMusic,
       photo: photo ?? this.photo,
@@ -61,6 +65,7 @@ class CarModel {
       'brand': brand,
       'shape': shape,
       'name': name,
+      'informations': informations, // Nouveau champ
       'is_piggy_bank': isPiggyBank ? 1 : 0,
       'plays_music': playsMusic ? 1 : 0,
       'photo': photo,
@@ -76,6 +81,7 @@ class CarModel {
       brand: map['brand'] as String? ?? '',
       shape: map['shape'] as String? ?? '',
       name: map['name'] as String? ?? '',
+      informations: map['informations'] as String?, // Nouveau champ
       isPiggyBank: (map['is_piggy_bank'] as int? ?? 0) == 1,
       playsMusic: (map['plays_music'] as int? ?? 0) == 1,
       photo: map['photo'] as Uint8List?,
@@ -94,6 +100,7 @@ class CarModel {
       'brand': brand,
       'shape': shape,
       'name': name,
+      'informations': informations, // Nouveau champ
       'isPiggyBank': isPiggyBank,
       'playsMusic': playsMusic,
       'hasPhoto': photo != null,

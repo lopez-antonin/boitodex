@@ -26,7 +26,7 @@ class CarDatabase {
 
       return await openDatabase(
         path,
-        version: AppConstants.databaseVersion,
+        version: 3, // Nouvelle version pour ajouter le champ informations
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
       );
@@ -43,6 +43,7 @@ class CarDatabase {
         brand TEXT NOT NULL,
         shape TEXT NOT NULL,
         name TEXT NOT NULL,
+        informations TEXT,
         is_piggy_bank INTEGER NOT NULL DEFAULT 0,
         plays_music INTEGER NOT NULL DEFAULT 0,
         photo BLOB,
@@ -82,6 +83,11 @@ class CarDatabase {
       }
 
       await db.execute('CREATE INDEX idx_cars_uuid ON cars(uuid)');
+    }
+
+    if (oldVersion < 3) {
+      // Migration vers version 3 - Ajouter le champ informations
+      await db.execute('ALTER TABLE cars ADD COLUMN informations TEXT');
     }
   }
 
@@ -160,7 +166,8 @@ class CarDatabase {
           whereArgs.add(filter.shape);
         }
         if (filter.nameQuery.isNotEmpty) {
-          whereClauses.add('name LIKE ?');
+          whereClauses.add('(name LIKE ? OR informations LIKE ?)');
+          whereArgs.add('%${filter.nameQuery}%');
           whereArgs.add('%${filter.nameQuery}%');
         }
       }
@@ -219,7 +226,8 @@ class CarDatabase {
           whereArgs.add(filter.shape);
         }
         if (filter.nameQuery.isNotEmpty) {
-          whereClauses.add('name LIKE ?');
+          whereClauses.add('(name LIKE ? OR informations LIKE ?)');
+          whereArgs.add('%${filter.nameQuery}%');
           whereArgs.add('%${filter.nameQuery}%');
         }
       }

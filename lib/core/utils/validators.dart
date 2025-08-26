@@ -43,4 +43,13 @@ class Validators {
 
     return validateMaxLength(value, 100, fieldName: 'Le nom');
   }
+
+  // Nouveau validateur pour les informations (optionnel mais avec limite de caractères)
+  static String? validateInformations(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null; // Champ optionnel
+    }
+
+    return validateMaxLength(value, 500, fieldName: 'Les informations');
+  }
 }

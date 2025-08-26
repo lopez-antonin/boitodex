@@ -23,6 +23,7 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
   final _brandController = TextEditingController();
   final _shapeController = TextEditingController();
   final _nameController = TextEditingController();
+  final _informationsController = TextEditingController(); // Nouveau contrôleur
 
   bool _isPiggyBank = false;
   bool _playsMusic = false;
@@ -44,6 +45,7 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
     _brandController.dispose();
     _shapeController.dispose();
     _nameController.dispose();
+    _informationsController.dispose(); // Dispose du nouveau contrôleur
     super.dispose();
   }
 
@@ -52,6 +54,7 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
     _brandController.text = car.brand;
     _shapeController.text = car.shape;
     _nameController.text = car.name;
+    _informationsController.text = car.informations ?? ''; // Nouveau champ
     _isPiggyBank = car.isPiggyBank;
     _playsMusic = car.playsMusic;
     _photoBytes = car.photo;
@@ -71,6 +74,38 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
     setState(() => _photoBytes = null);
   }
 
+  void _showFullImage() {
+    if (_photoBytes == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.black,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                child: Image.memory(_photoBytes!),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(
+                  Icons.close,
+                  color: Colors.white,
+                  size: 30,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -83,6 +118,9 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
         brand: _brandController.text.trim(),
         shape: _shapeController.text.trim(),
         name: _nameController.text.trim(),
+        informations: _informationsController.text.trim().isEmpty
+            ? null
+            : _informationsController.text.trim(), // Nouveau champ
         isPiggyBank: _isPiggyBank,
         playsMusic: _playsMusic,
         photo: _photoBytes,
@@ -182,14 +220,34 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Photo
-                ImagePickerWidget(
-                  imageBytes: _photoBytes,
-                  onImageSelected: _onImageSelected,
-                  onImageRemoved: _onImageRemoved,
-                  imageSize: _photoBytes != null
-                      ? ImageUtils.getImageSizeText(_photoBytes)
-                      : null,
+                // Photo avec possibilité d'affichage plein écran
+                Stack(
+                  children: [
+                    ImagePickerWidget(
+                      imageBytes: _photoBytes,
+                      onImageSelected: _onImageSelected,
+                      onImageRemoved: _onImageRemoved,
+                      imageSize: _photoBytes != null
+                          ? ImageUtils.getImageSizeText(_photoBytes)
+                          : null,
+                    ),
+                    if (_photoBytes != null)
+                      Positioned(
+                        top: 40,
+                        left: 8,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: IconButton(
+                            onPressed: _showFullImage,
+                            icon: const Icon(Icons.fullscreen, color: Colors.white),
+                            tooltip: 'Voir en grand',
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 24),
 
@@ -229,6 +287,21 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
                   ),
                   validator: Validators.validateName,
                   textCapitalization: TextCapitalization.words,
+                ),
+                const SizedBox(height: 16),
+
+                // Informations - NOUVEAU CHAMP
+                TextFormField(
+                  controller: _informationsController,
+                  decoration: const InputDecoration(
+                    labelText: 'Informations',
+                    hintText: 'Ex: Obtenue pour mon anniversaire, légèrement rayée...',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.info_outline),
+                    alignLabelWithHint: true,
+                  ),
+                  maxLines: 3,
+                  textCapitalization: TextCapitalization.sentences,
                 ),
                 const SizedBox(height: 16),
 
