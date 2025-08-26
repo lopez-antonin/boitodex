@@ -15,22 +15,15 @@ class CarListItem extends StatelessWidget {
   });
 
   Widget _buildImage() {
-    if (car.photo != null && car.photo!.isNotEmpty) {
-      return Container(
-        width: 80,
-        height: 80,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          child: Image.memory(
-            car.photo!,
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover, // Force l'image à remplir le carré 1:1
-            errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
-          ),
+    if (car.photo != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+        child: Image.memory(
+          car.photo!,
+          width: 80,
+          height: 80,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
         ),
       );
     }
@@ -45,10 +38,10 @@ class CarListItem extends StatelessWidget {
         color: Colors.grey[200],
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
       ),
-      child: Icon(
+      child: const Icon(
         Icons.directions_car,
         size: 40,
-        color: Colors.grey[600],
+        color: Colors.grey,
       ),
     );
   }
@@ -107,8 +100,7 @@ class CarListItem extends StatelessWidget {
                 color: Colors.grey[600],
               ),
             ),
-            // Afficher les informations si elles existent
-            if (car.informations != null && car.informations!.isNotEmpty) ...[
+            if (car.informations?.isNotEmpty ?? false) ...[
               const SizedBox(height: 4),
               Text(
                 car.informations!,
@@ -121,50 +113,33 @@ class CarListItem extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 6),
-            Wrap(
-              spacing: 12,
-              runSpacing: 4,
+            Row( // Wrap remplacé par Row (si tu prévois que 2 badges max)
               children: [
-                if (car.isPiggyBank)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.savings,
-                        size: 16,
-                        color: Colors.amber[700],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Tirelire',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.amber[700],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                if (car.isPiggyBank) ...[
+                  const Icon(Icons.savings, size: 16, color: Colors.amber),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Tirelire',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.amber,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                if (car.playsMusic)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.music_note,
-                        size: 16,
-                        color: Colors.purple[700],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Musique',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.purple[700],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 12),
+                ],
+                if (car.playsMusic) ...[
+                  const Icon(Icons.music_note, size: 16, color: Colors.purple),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Musique',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.purple,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
+                ],
               ],
             ),
           ],

@@ -117,9 +117,6 @@ class _ImagePickerWidgetState extends ConsumerState<ImagePickerWidget> {
     if (widget.imageBytes != null && widget.imageBytes!.isNotEmpty) {
       return Container(
         width: double.infinity,
-        constraints: const BoxConstraints(
-          maxHeight: 400, // Hauteur maximale pour éviter que l'image prenne trop de place
-        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           border: Border.all(color: Colors.grey[300]!),
