@@ -220,34 +220,13 @@ class _AddEditCarScreenState extends ConsumerState<AddEditCarScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Photo avec possibilité d'affichage plein écran
-                Stack(
-                  children: [
-                    ImagePickerWidget(
-                      imageBytes: _photoBytes,
-                      onImageSelected: _onImageSelected,
-                      onImageRemoved: _onImageRemoved,
-                      imageSize: _photoBytes != null
-                          ? ImageUtils.getImageSizeText(_photoBytes)
-                          : null,
-                    ),
-                    if (_photoBytes != null)
-                      Positioned(
-                        top: 40,
-                        left: 8,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: IconButton(
-                            onPressed: _showFullImage,
-                            icon: const Icon(Icons.fullscreen, color: Colors.white),
-                            tooltip: 'Voir en grand',
-                          ),
-                        ),
-                      ),
-                  ],
+                ImagePickerWidget(
+                  imageBytes: _photoBytes,
+                  onImageSelected: _onImageSelected,
+                  onImageRemoved: _onImageRemoved,
+                  imageSize: _photoBytes != null
+                      ? ImageUtils.getImageSizeText(_photoBytes)
+                      : null,
                 ),
                 const SizedBox(height: 24),
 
