@@ -134,6 +134,9 @@ class _CarFormScreenState extends State<CarFormScreen> {
       if (mounted) {
         if (success) {
           Navigator.pop(context, true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Voiture supprimée')),
+          );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

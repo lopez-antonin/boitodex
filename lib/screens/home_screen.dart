@@ -439,6 +439,20 @@ class _SortDialogState extends State<_SortDialog> {
     _ascending = widget.currentAscending;
   }
 
+  String getSortSubtitle(SortOption option, bool ascending) {
+    switch (option) {
+      case SortOption.name:
+      case SortOption.brand:
+      case SortOption.shape:
+        return ascending ? 'A → Z' : 'Z → A';
+      case SortOption.createdAt:
+      case SortOption.updatedAt:
+        return ascending ? 'Ancien → Récent' : 'Récent → Ancien';
+      default:
+        return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -460,12 +474,12 @@ class _SortDialogState extends State<_SortDialog> {
           // Ascending/Descending toggle
           SwitchListTile(
             title: const Text('Ordre croissant'),
-            subtitle: Text(_ascending ? 'A → Z' : 'Z → A'),
+            subtitle: Text(getSortSubtitle(_selectedSortBy, _ascending)),
             value: _ascending,
             onChanged: (value) {
               setState(() => _ascending = value);
             },
-          ),
+          )
         ],
       ),
       actions: [
