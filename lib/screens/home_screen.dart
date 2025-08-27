@@ -4,7 +4,12 @@ import '../services/car_service.dart';
 import '../services/export_service.dart';
 import '../models/car.dart';
 import '../models/filter.dart';
-import '../core/constants.dart';
+import '../core/constants/app_constants.dart';
+import '../core/dialogs.dart';
+import '../widgets/car_list_item.dart';
+import '../widgets/sort_dialog.dart';
+import '../widgets/search_filter_widget.dart';
+import '../widgets/empty_state_widget.dart';
 import 'car_form_screen.dart';
 
 /// Main screen displaying the car collection
@@ -119,11 +124,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// Clear all filters
+  void _clearFilters() {
+    _searchController.clear();
+    _updateFilter(const CarFilter());
+  }
+
   /// Show sort dialog
   Future<void> _showSortDialog() async {
     final result = await showDialog<({SortOption sortBy, bool ascending})>(
       context: context,
-      builder: (context) => _SortDialog(
+      builder: (context) => SortDialog(
         currentSortBy: _filter.sortBy,
         currentAscending: _filter.sortAscending,
       ),
@@ -143,44 +154,24 @@ class _HomeScreenState extends State<HomeScreen> {
     final success = await _exportService.exportCars(cars);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? 'Collection exportée!' : 'Erreur lors de l\'export'),
-          backgroundColor: success ? Colors.green : Colors.red,
-        ),
-      );
+      if (success) {
+        Dialogs.showSuccessSnackBar(context, 'Collection exportée!');
+      } else {
+        Dialogs.showErrorSnackBar(context, 'Erreur lors de l\'export');
+      }
     }
   }
 
   /// Delete car with confirmation
   Future<void> _deleteCar(Car car) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Supprimer la voiture'),
-        content: Text('Voulez-vous vraiment supprimer "${car.name}" ?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Supprimer'),
-          ),
-        ],
-      ),
-    );
+    final confirm = await Dialogs.showDeleteCarDialog(context, car.name);
 
-    if (confirm == true) {
+    if (confirm) {
       final success = await _carService.deleteCar(car.id!);
       if (success) {
         _refreshCars();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Voiture supprimée')),
-          );
+          Dialogs.showSuccessSnackBar(context, 'Voiture supprimée');
         }
       }
     }
@@ -247,7 +238,15 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           // Search and filter section
-          _buildSearchAndFilter(),
+          SearchFilterWidget(
+            searchController: _searchController,
+            filter: _filter,
+            brands: _brands,
+            shapes: _shapes,
+            onSearchChanged: _onSearchChanged,
+            onFilterChanged: _updateFilter,
+            onClearFilters: _clearFilters,
+          ),
 
           // Car list
           Expanded(
@@ -265,104 +264,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// Build search and filter widgets
-  Widget _buildSearchAndFilter() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Search field
-          TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              labelText: 'Rechercher',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: _filter.nameQuery.isNotEmpty
-                  ? IconButton(
-                onPressed: () {
-                  _searchController.clear();
-                  _updateFilter(_filter.copyWith(nameQuery: ''));
-                },
-                icon: const Icon(Icons.clear),
-              )
-                  : null,
-              border: const OutlineInputBorder(),
-            ),
-            onChanged: _onSearchChanged,
-          ),
-          const SizedBox(height: 16),
-
-          // Filter dropdowns
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  initialValue: _filter.brand,
-                  decoration: const InputDecoration(
-                    labelText: 'Marque',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: [
-                    const DropdownMenuItem<String>(
-                      value: null,
-                      child: Text('Toutes'),
-                    ),
-                    ..._brands.map((brand) => DropdownMenuItem<String>(
-                      value: brand,
-                      child: Text(brand),
-                    )),
-                  ],
-                  onChanged: (value) {
-                    _updateFilter(_filter.copyWith(brand: value));
-                  },
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  initialValue: _filter.shape,
-                  decoration: const InputDecoration(
-                    labelText: 'Forme',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: [
-                    const DropdownMenuItem<String>(
-                      value: null,
-                      child: Text('Toutes'),
-                    ),
-                    ..._shapes.map((shape) => DropdownMenuItem<String>(
-                      value: shape,
-                      child: Text(shape),
-                    )),
-                  ],
-                  onChanged: (value) {
-                    _updateFilter(_filter.copyWith(shape: value));
-                  },
-                ),
-              ),
-            ],
-          ),
-
-          // Clear filters button
-          if (_filter.hasActiveFilters) ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  _searchController.clear();
-                  _updateFilter(const CarFilter());
-                },
-                icon: const Icon(Icons.clear_all),
-                label: const Text('Effacer les filtres'),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   /// Build the car list
   Widget _buildCarList() {
     if (_isLoading && _cars.isEmpty) {
@@ -370,24 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (_cars.isEmpty && !_isLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.directions_car, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(
-              _filter.hasActiveFilters
-                  ? 'Aucune voiture ne correspond aux filtres'
-                  : 'Aucune voiture dans la collection',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      );
+      return EmptyStateWidget(hasActiveFilters: _filter.hasActiveFilters);
     }
 
     return ListView.builder(
@@ -404,194 +288,12 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         final car = _cars[index];
-        return _CarListItem(
+        return CarListItem(
           car: car,
           onTap: () => _navigateToCarForm(car),
           onDelete: () => _deleteCar(car),
         );
       },
-    );
-  }
-}
-
-/// Sort dialog widget
-class _SortDialog extends StatefulWidget {
-  final SortOption currentSortBy;
-  final bool currentAscending;
-
-  const _SortDialog({
-    required this.currentSortBy,
-    required this.currentAscending,
-  });
-
-  @override
-  State<_SortDialog> createState() => _SortDialogState();
-}
-
-class _SortDialogState extends State<_SortDialog> {
-  late SortOption _selectedSortBy;
-  late bool _ascending;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedSortBy = widget.currentSortBy;
-    _ascending = widget.currentAscending;
-  }
-
-  String getSortSubtitle(SortOption option, bool ascending) {
-    switch (option) {
-      case SortOption.name:
-      case SortOption.brand:
-      case SortOption.shape:
-        return ascending ? 'A → Z' : 'Z → A';
-      case SortOption.createdAt:
-      case SortOption.updatedAt:
-        return ascending ? 'Ancien → Récent' : 'Récent → Ancien';
-      }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Trier par'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Sort options
-          ...SortOption.values.map((option) => RadioListTile<SortOption>(
-            title: Text(option.displayName),
-            value: option,
-            groupValue: _selectedSortBy,
-            onChanged: (value) {
-              setState(() => _selectedSortBy = value!);
-            },
-          )),
-          const Divider(),
-
-          // Ascending/Descending toggle
-          SwitchListTile(
-            title: const Text('Ordre croissant'),
-            subtitle: Text(getSortSubtitle(_selectedSortBy, _ascending)),
-            value: _ascending,
-            onChanged: (value) {
-              setState(() => _ascending = value);
-            },
-          )
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Annuler'),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context, (
-            sortBy: _selectedSortBy,
-            ascending: _ascending,
-            ));
-          },
-          child: const Text('Appliquer'),
-        ),
-      ],
-    );
-  }
-}
-
-/// Individual car list item widget
-class _CarListItem extends StatelessWidget {
-  final Car car;
-  final VoidCallback onTap;
-  final VoidCallback onDelete;
-
-  const _CarListItem({
-    required this.car,
-    required this.onTap,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: ListTile(
-        leading: _buildCarImage(),
-        title: Text(
-          car.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${car.brand} • ${car.shape}'),
-            if (car.informations?.isNotEmpty ?? false)
-              Text(
-                car.informations!,
-                style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey[600],
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            if (car.isPiggyBank || car.playsMusic) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  if (car.isPiggyBank) ...[
-                    const Icon(Icons.savings, size: 16, color: Colors.amber),
-                    const SizedBox(width: 4),
-                    const Text('Tirelire', style: TextStyle(fontSize: 12)),
-                    const SizedBox(width: 12),
-                  ],
-                  if (car.playsMusic) ...[
-                    const Icon(Icons.music_note, size: 16, color: Colors.purple),
-                    const SizedBox(width: 4),
-                    const Text('Musique', style: TextStyle(fontSize: 12)),
-                  ],
-                ],
-              ),
-            ],
-          ],
-        ),
-        trailing: IconButton(
-          onPressed: onDelete,
-          icon: const Icon(Icons.delete_outline),
-          color: Colors.red,
-        ),
-        onTap: onTap,
-      ),
-    );
-  }
-
-  /// Build car image or placeholder
-  Widget _buildCarImage() {
-    if (car.photo != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.memory(
-          car.photo!,
-          width: 60,
-          height: 60,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
-        ),
-      );
-    }
-    return _buildPlaceholder();
-  }
-
-  /// Build placeholder when no image
-  Widget _buildPlaceholder() {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Icon(Icons.directions_car, color: Colors.grey),
     );
   }
 }

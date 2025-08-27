@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../services/car_service.dart';
 import '../services/image_service.dart';
 import '../models/car.dart';
-import '../core/utils.dart';
+import '../widgets/image_section_widget.dart';
+import '../widgets/car_form_fields.dart';
+import '../core/dialogs.dart';
 
 /// Screen for adding or editing a car
 class CarFormScreen extends StatefulWidget {
@@ -93,12 +95,7 @@ class _CarFormScreenState extends State<CarFormScreen> {
       if (success) {
         Navigator.pop(context, true); // Return true to indicate success
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erreur lors de la sauvegarde'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        Dialogs.showErrorSnackBar(context, 'Erreur lors de la sauvegarde');
       }
     }
   }
@@ -107,26 +104,9 @@ class _CarFormScreenState extends State<CarFormScreen> {
   Future<void> _deleteCar() async {
     if (!_isEditing) return;
 
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Supprimer la voiture'),
-        content: Text('Voulez-vous vraiment supprimer "${widget.car!.name}" ?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Supprimer'),
-          ),
-        ],
-      ),
-    );
+    final confirm = await Dialogs.showDeleteCarDialog(context, widget.car!.name);
 
-    if (confirm == true) {
+    if (confirm) {
       setState(() => _isLoading = true);
       final success = await _carService.deleteCar(widget.car!.id!);
       setState(() => _isLoading = false);
@@ -134,16 +114,9 @@ class _CarFormScreenState extends State<CarFormScreen> {
       if (mounted) {
         if (success) {
           Navigator.pop(context, true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Voiture supprimée')),
-          );
+          Dialogs.showSuccessSnackBar(context, 'Voiture supprimée');
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Erreur lors de la suppression'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          Dialogs.showErrorSnackBar(context, 'Erreur lors de la suppression');
         }
       }
     }
@@ -151,40 +124,11 @@ class _CarFormScreenState extends State<CarFormScreen> {
 
   /// Show image selection options
   void _showImageOptions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Galerie'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickFromGallery();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Appareil photo'),
-              onTap: () {
-                Navigator.pop(context);
-                _takePhoto();
-              },
-            ),
-            if (_photoBytes != null)
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Supprimer l\'image'),
-                onTap: () {
-                  Navigator.pop(context);
-                  setState(() => _photoBytes = null);
-                },
-              ),
-          ],
-        ),
-      ),
+    Dialogs.showImageSelectionBottomSheet(
+      context,
+      onGalleryTap: _pickFromGallery,
+      onCameraTap: _takePhoto,
+      onDeleteTap: _photoBytes != null ? () => setState(() => _photoBytes = null) : null,
     );
   }
 
@@ -228,79 +172,24 @@ class _CarFormScreenState extends State<CarFormScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Image section
-              _buildImageSection(),
+              ImageSectionWidget(
+                photoBytes: _photoBytes,
+                onImageTap: _showImageOptions,
+              ),
               const SizedBox(height: 24),
 
-              // Brand field
-              TextFormField(
-                controller: _brandController,
-                decoration: const InputDecoration(
-                  labelText: 'Marque *',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => Utils.validateRequired(value, 'La marque'),
-                textCapitalization: TextCapitalization.words,
+              // Form fields
+              CarFormFields(
+                brandController: _brandController,
+                shapeController: _shapeController,
+                nameController: _nameController,
+                informationsController: _informationsController,
+                isPiggyBank: _isPiggyBank,
+                playsMusic: _playsMusic,
+                onPiggyBankChanged: (value) => setState(() => _isPiggyBank = value),
+                onPlaysMusicChanged: (value) => setState(() => _playsMusic = value),
               ),
-              const SizedBox(height: 16),
 
-              // Shape field
-              TextFormField(
-                controller: _shapeController,
-                decoration: const InputDecoration(
-                  labelText: 'Forme *',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => Utils.validateRequired(value, 'La forme'),
-                textCapitalization: TextCapitalization.words,
-              ),
-              const SizedBox(height: 16),
-
-              // Name field
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom *',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) => Utils.validateRequired(value, 'Le nom'),
-                textCapitalization: TextCapitalization.words,
-              ),
-              const SizedBox(height: 16),
-
-              // Informations field
-              TextFormField(
-                controller: _informationsController,
-                decoration: const InputDecoration(
-                  labelText: 'Informations',
-                  hintText: 'Notes, état, origine...',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) => Utils.validateMaxLength(value, 500, 'Les informations'),
-                textCapitalization: TextCapitalization.sentences,
-              ),
-              const SizedBox(height: 16),
-
-              // Options section
-              Card(
-                child: Column(
-                  children: [
-                    SwitchListTile(
-                      title: const Text('Tirelire'),
-                      subtitle: const Text('Cette voiture est une tirelire'),
-                      value: _isPiggyBank,
-                      onChanged: (value) => setState(() => _isPiggyBank = value),
-                    ),
-                    const Divider(height: 1),
-                    SwitchListTile(
-                      title: const Text('Fait de la musique'),
-                      subtitle: const Text('Cette voiture émet des sons'),
-                      value: _playsMusic,
-                      onChanged: (value) => setState(() => _playsMusic = value),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 100), // Space for bottom buttons
             ],
           ),
@@ -331,54 +220,6 @@ class _CarFormScreenState extends State<CarFormScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  /// Build the image selection section
-  Widget _buildImageSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Photo',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: _showImageOptions,
-          child: Container(
-            width: double.infinity,
-            height: _photoBytes != null ? null : 200,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: _photoBytes != null
-                ? ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.memory(
-                _photoBytes!,
-                fit: BoxFit.contain,
-              ),
-            )
-                : const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.add_photo_alternate, size: 48, color: Colors.grey),
-                SizedBox(height: 8),
-                Text('Ajouter une photo', style: TextStyle(color: Colors.grey)),
-              ],
-            ),
-          ),
-        ),
-        if (_photoBytes != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            Utils.getImageSizeText(_photoBytes),
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ],
-      ],
     );
   }
 }

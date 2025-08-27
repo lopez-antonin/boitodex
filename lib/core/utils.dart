@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
-import 'constants.dart';
+import 'constants/app_constants.dart';
 
 /// Utility functions for the application
 class Utils {

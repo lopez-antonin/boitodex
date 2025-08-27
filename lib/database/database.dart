@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import '../core/constants.dart';
+import '../core/constants/app_constants.dart';
 import '../models/car.dart';
 import '../models/filter.dart';
 
