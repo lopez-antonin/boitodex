@@ -1,55 +1,51 @@
 import 'dart:typed_data';
-import 'package:uuid/uuid.dart';
 
-class CarModel {
+/// Car model representing a collectible car
+class Car {
   final int? id;
-  final String uuid;
   final String brand;
   final String shape;
   final String name;
-  final String? informations; // Nouveau champ
+  final String? informations;
   final bool isPiggyBank;
   final bool playsMusic;
   final Uint8List? photo;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  CarModel({
+  Car({
     this.id,
-    String? uuid,
     required this.brand,
     required this.shape,
     required this.name,
-    this.informations, // Nouveau champ optionnel
-    required this.isPiggyBank,
-    required this.playsMusic,
+    this.informations,
+    this.isPiggyBank = false,
+    this.playsMusic = false,
     this.photo,
     DateTime? createdAt,
     DateTime? updatedAt,
-  }) : uuid = uuid ?? const Uuid().v4(),
-        createdAt = createdAt ?? DateTime.now(),
+  })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
-  CarModel copyWith({
+  /// Create a copy of the car with updated fields
+  Car copyWith({
     int? id,
-    String? uuid,
     String? brand,
     String? shape,
     String? name,
-    String? informations, // Nouveau champ
+    String? informations,
     bool? isPiggyBank,
     bool? playsMusic,
     Uint8List? photo,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
-    return CarModel(
+    return Car(
       id: id ?? this.id,
-      uuid: uuid ?? this.uuid,
       brand: brand ?? this.brand,
       shape: shape ?? this.shape,
       name: name ?? this.name,
-      informations: informations ?? this.informations, // Nouveau champ
+      informations: informations ?? this.informations,
       isPiggyBank: isPiggyBank ?? this.isPiggyBank,
       playsMusic: playsMusic ?? this.playsMusic,
       photo: photo ?? this.photo,
@@ -58,14 +54,14 @@ class CarModel {
     );
   }
 
-  Map<String, Object?> toMap() {
+  /// Convert car to database map
+  Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'uuid': uuid,
       'brand': brand,
       'shape': shape,
       'name': name,
-      'informations': informations, // Nouveau champ
+      'informations': informations,
       'is_piggy_bank': isPiggyBank ? 1 : 0,
       'plays_music': playsMusic ? 1 : 0,
       'photo': photo,
@@ -74,14 +70,14 @@ class CarModel {
     };
   }
 
-  factory CarModel.fromMap(Map<String, Object?> map) {
-    return CarModel(
+  /// Create car from database map
+  factory Car.fromMap(Map<String, dynamic> map) {
+    return Car(
       id: map['id'] as int?,
-      uuid: map['uuid'] as String? ?? const Uuid().v4(),
       brand: map['brand'] as String? ?? '',
       shape: map['shape'] as String? ?? '',
       name: map['name'] as String? ?? '',
-      informations: map['informations'] as String?, // Nouveau champ
+      informations: map['informations'] as String?,
       isPiggyBank: (map['is_piggy_bank'] as int? ?? 0) == 1,
       playsMusic: (map['plays_music'] as int? ?? 0) == 1,
       photo: map['photo'] as Uint8List?,
@@ -94,13 +90,13 @@ class CarModel {
     );
   }
 
+  /// Convert car to JSON for export
   Map<String, dynamic> toJson() {
     return {
-      'uuid': uuid,
       'brand': brand,
       'shape': shape,
       'name': name,
-      'informations': informations, // Nouveau champ
+      'informations': informations,
       'isPiggyBank': isPiggyBank,
       'playsMusic': playsMusic,
       'hasPhoto': photo != null,

@@ -1,11 +1,12 @@
-class FilterModel {
+/// Filter and sorting options for car list
+class CarFilter {
   final String? brand;
   final String? shape;
   final String nameQuery;
   final SortOption sortBy;
   final bool sortAscending;
 
-  const FilterModel({
+  const CarFilter({
     this.brand,
     this.shape,
     this.nameQuery = '',
@@ -13,14 +14,15 @@ class FilterModel {
     this.sortAscending = true,
   });
 
-  FilterModel copyWith({
+  /// Create a copy with updated values
+  CarFilter copyWith({
     String? brand,
     String? shape,
     String? nameQuery,
     SortOption? sortBy,
     bool? sortAscending,
   }) {
-    return FilterModel(
+    return CarFilter(
       brand: brand ?? this.brand,
       shape: shape ?? this.shape,
       nameQuery: nameQuery ?? this.nameQuery,
@@ -29,12 +31,14 @@ class FilterModel {
     );
   }
 
+  /// Check if any filters are active
   bool get hasActiveFilters =>
       brand != null ||
           shape != null ||
           nameQuery.isNotEmpty;
 }
 
+/// Available sorting options
 enum SortOption {
   name('Nom'),
   brand('Marque'),

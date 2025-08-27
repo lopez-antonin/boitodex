@@ -1,36 +1,34 @@
 import 'dart:typed_data';
-import 'dart:math' as math;
 import 'package:image/image.dart' as img;
-import '../constants/app_constants.dart';
-import '../errors/exceptions.dart';
+import 'constants.dart';
 
-class ImageUtils {
-  static Future<Uint8List> processImage(Uint8List imageBytes) async {
+/// Utility functions for the application
+class Utils {
+
+  /// Process and resize an image to fit within max dimensions
+  static Future<Uint8List?> processImage(Uint8List imageBytes) async {
     try {
-      // Vérifier la taille du fichier
+      // Check file size
       if (imageBytes.lengthInBytes > AppConstants.maxImageSizeBytes) {
-        throw const FileException('Image trop volumineuse. Taille maximale: 5MB');
+        return null; // Image too large
       }
 
-      // Décoder l'image
+      // Decode image
       final image = img.decodeImage(imageBytes);
-      if (image == null) {
-        throw const FileException('Format d\'image non supporté');
-      }
+      if (image == null) return null;
 
-      // Redimensionner si nécessaire
+      // Resize if necessary
       final resized = _resizeImage(image);
 
-      // Encoder en JPEG avec compression
+      // Encode as JPEG with compression
       final processed = img.encodeJpg(resized, quality: AppConstants.imageQuality);
-
       return Uint8List.fromList(processed);
     } catch (e) {
-      if (e is FileException) rethrow;
-      throw FileException('Erreur lors du traitement de l\'image: ${e.toString()}');
+      return null;
     }
   }
 
+  /// Resize image maintaining aspect ratio
   static img.Image _resizeImage(img.Image image) {
     final maxWidth = AppConstants.maxImageWidth;
     final maxHeight = AppConstants.maxImageHeight;
@@ -43,18 +41,19 @@ class ImageUtils {
     int newWidth, newHeight;
 
     if (aspectRatio > 1) {
-      // Landscape
-      newWidth = math.min(maxWidth, image.width);
+      // Landscape orientation
+      newWidth = maxWidth.clamp(0, image.width);
       newHeight = (newWidth / aspectRatio).round();
     } else {
-      // Portrait
-      newHeight = math.min(maxHeight, image.height);
+      // Portrait orientation
+      newHeight = maxHeight.clamp(0, image.height);
       newWidth = (newHeight * aspectRatio).round();
     }
 
     return img.copyResize(image, width: newWidth, height: newHeight);
   }
 
+  /// Get human-readable file size
   static String getImageSizeText(Uint8List? imageBytes) {
     if (imageBytes == null) return 'Aucune image';
 
@@ -64,5 +63,21 @@ class ImageUtils {
       return '${sizeInKB.toStringAsFixed(0)} KB';
     }
     return '${sizeInMB.toStringAsFixed(1)} MB';
+  }
+
+  /// Validate required text field
+  static String? validateRequired(String? value, String fieldName) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName est obligatoire';
+    }
+    return null;
+  }
+
+  /// Validate text field with max length
+  static String? validateMaxLength(String? value, int maxLength, String fieldName) {
+    if (value != null && value.trim().length > maxLength) {
+      return '$fieldName ne peut pas dépasser $maxLength caractères';
+    }
+    return null;
   }
 }
