@@ -297,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: _filter.brand,
+                  initialValue: _filter.brand,
                   decoration: const InputDecoration(
                     labelText: 'Marque',
                     border: OutlineInputBorder(),
@@ -320,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: _filter.shape,
+                  initialValue: _filter.shape,
                   decoration: const InputDecoration(
                     labelText: 'Forme',
                     border: OutlineInputBorder(),
@@ -448,9 +448,7 @@ class _SortDialogState extends State<_SortDialog> {
       case SortOption.createdAt:
       case SortOption.updatedAt:
         return ascending ? 'Ancien → Récent' : 'Récent → Ancien';
-      default:
-        return '';
-    }
+      }
   }
 
   @override
