@@ -8,8 +8,8 @@ import '../core/constants/app_constants.dart';
 import '../core/dialogs.dart';
 import '../widgets/car_list_item.dart';
 import '../widgets/sort_dialog.dart';
-import '../widgets/search_filter_widget.dart';
-import '../widgets/empty_state_widget.dart';
+import '../widgets/search_filter.dart';
+import '../widgets/empty_state.dart';
 import 'car_form_screen.dart';
 
 /// Main screen displaying the car collection

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/car_service.dart';
 import '../services/image_service.dart';
 import '../models/car.dart';
-import '../widgets/image_section_widget.dart';
+import '../widgets/image_section.dart';
 import '../widgets/car_form_fields.dart';
 import '../core/dialogs.dart';
 
