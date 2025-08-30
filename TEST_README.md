@@ -101,23 +101,6 @@ flutter test test/unit/domain/entities/car_test.dart
 flutter test test/unit/features/home/
 ```
 
-### Script automatisé
-
-Un script automatisé est disponible pour exécuter tous les tests :
-
-```bash
-chmod +x run_tests.sh
-./run_tests.sh
-```
-
-Ce script :
-- 📦 Installe les dépendances
-- 🔧 Génère les mocks
-- 🧪 Exécute tous les tests avec couverture
-- 📊 Génère un rapport de couverture HTML
-
-## Couverture de code
-
 ### Visualiser la couverture
 
 Après avoir exécuté les tests avec `--coverage` :
