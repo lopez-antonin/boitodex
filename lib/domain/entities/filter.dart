@@ -23,8 +23,8 @@ class CarFilter extends Equatable {
     bool? sortAscending,
   }) {
     return CarFilter(
-      brand: brand,
-      shape: shape,
+      brand: brand ?? this.brand,
+      shape: shape ?? this.shape,
       nameQuery: nameQuery ?? this.nameQuery,
       sortBy: sortBy ?? this.sortBy,
       sortAscending: sortAscending ?? this.sortAscending,

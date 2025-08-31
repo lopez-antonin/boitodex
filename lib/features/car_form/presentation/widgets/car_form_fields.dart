@@ -29,6 +29,7 @@ class CarFormFields extends StatelessWidget {
     return Column(
       children: [
         TextFormField(
+          key: const Key('brand_field'),
           controller: brandController,
           decoration: const InputDecoration(
             labelText: '${AppStrings.brand} *',
@@ -39,6 +40,7 @@ class CarFormFields extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         TextFormField(
+          key: const Key('shape_field'),
           controller: shapeController,
           decoration: const InputDecoration(
             labelText: '${AppStrings.shape} *',
@@ -49,6 +51,7 @@ class CarFormFields extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         TextFormField(
+          key: const Key('name_field'),
           controller: nameController,
           decoration: const InputDecoration(
             labelText: '${AppStrings.name} *',
@@ -59,6 +62,7 @@ class CarFormFields extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         TextFormField(
+          key: const Key('informations_field'),
           controller: informationsController,
           decoration: const InputDecoration(
             labelText: AppStrings.informations,

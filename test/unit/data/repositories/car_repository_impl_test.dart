@@ -185,7 +185,7 @@ void main() {
       test('should pass filter to datasource', () async {
         // arrange
         const filter = CarFilter(brand: 'BMW');
-        when(mockLocalDataSource.getCars(filter: any(named: 'filter')))
+        when(mockLocalDataSource.getCars(filter: anyNamed('filter')))
             .thenAnswer((_) async => testCars);
 
         // act
@@ -252,7 +252,7 @@ void main() {
         // arrange
         const filter = CarFilter(brand: 'BMW');
         const expectedCount = 2;
-        when(mockLocalDataSource.getCarCount(filter: any(named: 'filter')))
+        when(mockLocalDataSource.getCarCount(filter: anyNamed('filter')))
             .thenAnswer((_) async => expectedCount);
 
         // act
@@ -261,7 +261,7 @@ void main() {
         // assert
         expect(result, const Right(expectedCount));
         verify(mockLocalDataSource.getCarCount(
-          filter: any(named: 'filter'),
+          filter: anyNamed('filter'),
         )).called(1);
       });
 

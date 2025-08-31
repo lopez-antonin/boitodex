@@ -3,16 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:boitodex/app/app.dart';
 import 'package:boitodex/app/di/injection.dart';
+import 'package:boitodex/features/home/presentation/view/home_view.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('Boitodex App Integration Tests', () {
     setUpAll(() async {
-      // Reset GetIt before each test
-      if (locator.isRegistered<Object>()) {
-        await locator.reset();
-      }
+      await locator.reset();
       await setupLocator();
     });
 
@@ -53,6 +51,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify we're back to home and car is added
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HomeView(),
+        ),
+      );
+      await tester.pumpAndSettle();
       expect(find.text('Collection'), findsOneWidget);
       expect(find.text('Serie 3'), findsOneWidget);
       expect(find.text('BMW • Berline'), findsOneWidget);

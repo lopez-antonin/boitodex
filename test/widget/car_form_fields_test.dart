@@ -140,11 +140,17 @@ void main() {
 
       final formFields = find.byType(TextFormField);
 
-      // Check that all fields have OutlineInputBorder
+      // Check that all fields have OutlineInputBorder by finding InputDecorator
       for (int i = 0; i < 4; i++) {
-        final field = tester.widget<TextFormField>(formFields.at(i));
-        final decoration = field.decoration as InputDecoration;
-        expect(decoration.border, isA<OutlineInputBorder>());
+        final textFieldFinder = formFields.at(i);
+        final inputDecoratorFinder = find.descendant(
+          of: textFieldFinder,
+          matching: find.byType(InputDecorator),
+        );
+        expect(inputDecoratorFinder, findsOneWidget);
+        final inputDecorator = tester.widget<InputDecorator>(inputDecoratorFinder);
+
+        expect(inputDecorator.decoration.border, isA<OutlineInputBorder>());
       }
     });
 

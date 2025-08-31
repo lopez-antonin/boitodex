@@ -14,7 +14,7 @@ dependencies:
 
   # Architecture & State Management
   provider: ^6.1.1
-  get_it: ^7.6.4
+  get_it: ^8.2.0
   dartz: ^0.10.1
   equatable: ^2.0.5
 
@@ -28,14 +28,14 @@ dependencies:
 
   # File & sharing
   path_provider: ^2.1.1
-  share_plus: ^7.2.1
+  share_plus: ^11.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   integration_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^6.0.0
   mockito: ^5.4.2
   build_runner: ^2.4.7
 
