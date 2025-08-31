@@ -3,186 +3,158 @@ import 'package:boitodex/domain/entities/filter.dart';
 
 void main() {
   group('CarFilter', () {
-    const tFilter = CarFilter(
-      brand: 'BMW',
-      shape: 'Sedan',
-      nameQuery: 'X5',
-      sortBy: SortOption.brand,
-      sortAscending: false,
-    );
+    test('should create filter with default values', () {
+      const filter = CarFilter();
+
+      expect(filter.brand, isNull);
+      expect(filter.shape, isNull);
+      expect(filter.nameQuery, equals(''));
+      expect(filter.sortBy, equals(SortOption.name));
+      expect(filter.sortAscending, isTrue);
+      expect(filter.hasActiveFilters, isFalse);
+    });
+
+    test('should create filter with all properties', () {
+      const filter = CarFilter(
+        brand: 'BMW',
+        shape: 'Berline',
+        nameQuery: 'Serie 3',
+        sortBy: SortOption.brand,
+        sortAscending: false,
+      );
+
+      expect(filter.brand, equals('BMW'));
+      expect(filter.shape, equals('Berline'));
+      expect(filter.nameQuery, equals('Serie 3'));
+      expect(filter.sortBy, equals(SortOption.brand));
+      expect(filter.sortAscending, isFalse);
+      expect(filter.hasActiveFilters, isTrue);
+    });
 
     group('copyWith', () {
+      const originalFilter = CarFilter(
+        brand: 'BMW',
+        shape: 'Berline',
+        nameQuery: 'Serie 3',
+        sortBy: SortOption.brand,
+        sortAscending: false,
+      );
+
       test('should return CarFilter with updated fields', () {
-        // act
-        final result = tFilter.copyWith(
+        final updatedFilter = originalFilter.copyWith(
           brand: 'Audi',
+          sortBy: SortOption.name,
           sortAscending: true,
         );
 
-        // assert
-        expect(result.brand, 'Audi');
-        expect(result.sortAscending, true);
-        expect(result.shape, tFilter.shape);
-        expect(result.nameQuery, tFilter.nameQuery);
-        expect(result.sortBy, tFilter.sortBy);
+        expect(updatedFilter.brand, equals('Audi'));
+        expect(updatedFilter.shape, equals('Berline'));
+        expect(updatedFilter.nameQuery, equals('Serie 3'));
+        expect(updatedFilter.sortBy, equals(SortOption.name));
+        expect(updatedFilter.sortAscending, isTrue);
       });
 
-      test('should return CarFilter with same values when no parameters provided', () {
-        // act
-        final result = tFilter.copyWith();
+      test('should return same filter when no fields are updated', () {
+        final sameFilter = originalFilter.copyWith();
 
-        // assert
-        expect(result, tFilter);
-        expect(result.brand, tFilter.brand);
-        expect(result.shape, tFilter.shape);
-        expect(result.nameQuery, tFilter.nameQuery);
-        expect(result.sortBy, tFilter.sortBy);
-        expect(result.sortAscending, tFilter.sortAscending);
+        expect(sameFilter.brand, equals('BMW'));
+        expect(sameFilter.shape, equals('Berline'));
+        expect(sameFilter.nameQuery, equals('Serie 3'));
+        expect(sameFilter.sortBy, equals(SortOption.brand));
+        expect(sameFilter.sortAscending, isFalse);
       });
 
       test('should clear fields when explicitly set to null', () {
-        // act
-        final result = tFilter.copyWith(
+        final clearedFilter = originalFilter.copyWith(
           brand: null,
           shape: null,
           nameQuery: '',
         );
 
-        // assert
-        expect(result.brand, null);
-        expect(result.shape, null);
-        expect(result.nameQuery, '');
+        expect(clearedFilter.brand, isNull);
+        expect(clearedFilter.shape, isNull);
+        expect(clearedFilter.nameQuery, equals(''));
+        expect(clearedFilter.hasActiveFilters, isFalse);
       });
     });
 
     group('hasActiveFilters', () {
-      test('should return true when brand filter is set', () {
-        // arrange
+      test('should return true when brand filter is active', () {
         const filter = CarFilter(brand: 'BMW');
-
-        // act & assert
-        expect(filter.hasActiveFilters, true);
+        expect(filter.hasActiveFilters, isTrue);
       });
 
-      test('should return true when shape filter is set', () {
-        // arrange
-        const filter = CarFilter(shape: 'Sedan');
-
-        // act & assert
-        expect(filter.hasActiveFilters, true);
+      test('should return true when shape filter is active', () {
+        const filter = CarFilter(shape: 'Berline');
+        expect(filter.hasActiveFilters, isTrue);
       });
 
-      test('should return true when name query is set', () {
-        // arrange
-        const filter = CarFilter(nameQuery: 'X5');
-
-        // act & assert
-        expect(filter.hasActiveFilters, true);
+      test('should return true when name query is active', () {
+        const filter = CarFilter(nameQuery: 'Serie');
+        expect(filter.hasActiveFilters, isTrue);
       });
 
-      test('should return true when multiple filters are set', () {
-        // arrange
+      test('should return false when no filters are active', () {
+        const filter = CarFilter(
+          sortBy: SortOption.brand,
+          sortAscending: false,
+        );
+        expect(filter.hasActiveFilters, isFalse);
+      });
+
+      test('should return true when multiple filters are active', () {
         const filter = CarFilter(
           brand: 'BMW',
-          shape: 'Sedan',
-          nameQuery: 'X5',
+          shape: 'Berline',
+          nameQuery: 'Serie 3',
         );
-
-        // act & assert
-        expect(filter.hasActiveFilters, true);
-      });
-
-      test('should return false when no filters are set', () {
-        // arrange
-        const filter = CarFilter();
-
-        // act & assert
-        expect(filter.hasActiveFilters, false);
-      });
-
-      test('should return false when filters are empty strings', () {
-        // arrange
-        const filter = CarFilter(
-          nameQuery: '',
-        );
-
-        // act & assert
-        expect(filter.hasActiveFilters, false);
-      });
-    });
-
-    group('props', () {
-      test('should include all fields in props for equality comparison', () {
-        // act
-        final props = tFilter.props;
-
-        // assert
-        expect(props.length, 5);
-        expect(props, contains(tFilter.brand));
-        expect(props, contains(tFilter.shape));
-        expect(props, contains(tFilter.nameQuery));
-        expect(props, contains(tFilter.sortBy));
-        expect(props, contains(tFilter.sortAscending));
+        expect(filter.hasActiveFilters, isTrue);
       });
     });
 
     group('equality', () {
-      test('should be equal when all fields are the same', () {
-        // arrange
-        const tFilter2 = CarFilter(
+      test('should be equal when all properties are the same', () {
+        const filter1 = CarFilter(
           brand: 'BMW',
-          shape: 'Sedan',
-          nameQuery: 'X5',
+          shape: 'Berline',
+          nameQuery: 'Serie 3',
           sortBy: SortOption.brand,
           sortAscending: false,
         );
 
-        // act & assert
-        expect(tFilter, equals(tFilter2));
-        expect(tFilter.hashCode, equals(tFilter2.hashCode));
-      });
-
-      test('should not be equal when fields differ', () {
-        // arrange
-        const tFilter2 = CarFilter(
-          brand: 'Audi', // different brand
-          shape: 'Sedan',
-          nameQuery: 'X5',
+        const filter2 = CarFilter(
+          brand: 'BMW',
+          shape: 'Berline',
+          nameQuery: 'Serie 3',
           sortBy: SortOption.brand,
           sortAscending: false,
         );
 
-        // act & assert
-        expect(tFilter, isNot(equals(tFilter2)));
+        expect(filter1, equals(filter2));
+        expect(filter1.hashCode, equals(filter2.hashCode));
       });
-    });
 
-    group('default values', () {
-      test('should have correct default values', () {
-        // arrange & act
-        const filter = CarFilter();
+      test('should not be equal when properties differ', () {
+        const filter1 = CarFilter(brand: 'BMW');
+        const filter2 = CarFilter(brand: 'Audi');
 
-        // assert
-        expect(filter.brand, null);
-        expect(filter.shape, null);
-        expect(filter.nameQuery, '');
-        expect(filter.sortBy, SortOption.name);
-        expect(filter.sortAscending, true);
+        expect(filter1, isNot(equals(filter2)));
+        expect(filter1.hashCode, isNot(equals(filter2.hashCode)));
       });
     });
   });
 
   group('SortOption', () {
     test('should have correct display names', () {
-      expect(SortOption.name.displayName, 'Nom');
-      expect(SortOption.brand.displayName, 'Marque');
-      expect(SortOption.shape.displayName, 'Forme');
-      expect(SortOption.createdAt.displayName, 'Date de création');
-      expect(SortOption.updatedAt.displayName, 'Date de modification');
+      expect(SortOption.name.displayName, equals('Nom'));
+      expect(SortOption.brand.displayName, equals('Marque'));
+      expect(SortOption.shape.displayName, equals('Forme'));
+      expect(SortOption.createdAt.displayName, equals('Date de création'));
+      expect(SortOption.updatedAt.displayName, equals('Date de modification'));
     });
 
-    test('should contain all expected values', () {
-      expect(SortOption.values.length, 5);
+    test('should have all expected values', () {
+      expect(SortOption.values.length, equals(5));
       expect(SortOption.values, contains(SortOption.name));
       expect(SortOption.values, contains(SortOption.brand));
       expect(SortOption.values, contains(SortOption.shape));

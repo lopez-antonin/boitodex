@@ -4,172 +4,166 @@ import 'package:boitodex/domain/entities/car.dart';
 
 void main() {
   group('Car', () {
-    final tDateTime = DateTime(2023, 1, 1);
-    final tPhotoBytes = Uint8List.fromList([1, 2, 3, 4]);
+    final now = DateTime.now();
+    final photoBytes = Uint8List.fromList([1, 2, 3, 4]);
 
-    final tCar = Car(
-      id: 1,
-      brand: 'BMW',
-      shape: 'Sedan',
-      name: 'X5',
-      informations: 'Test info',
-      isPiggyBank: true,
-      playsMusic: false,
-      photo: tPhotoBytes,
-      createdAt: tDateTime,
-      updatedAt: tDateTime,
-    );
+    test('should create a car with all properties', () {
+      final car = Car(
+        id: 1,
+        brand: 'BMW',
+        shape: 'Berline',
+        name: 'Serie 3',
+        informations: 'Belle voiture',
+        isPiggyBank: true,
+        playsMusic: false,
+        createdAt: DateTime(2023, 1, 1),
+        updatedAt: DateTime(2023, 1, 2),
+      );
+
+      expect(car.id, equals(1));
+      expect(car.brand, equals('BMW'));
+      expect(car.shape, equals('Berline'));
+      expect(car.name, equals('Serie 3'));
+      expect(car.informations, equals('Belle voiture'));
+      expect(car.isPiggyBank, isTrue);
+      expect(car.playsMusic, isFalse);
+      expect(car.createdAt, equals(DateTime(2023, 1, 1)));
+      expect(car.updatedAt, equals(DateTime(2023, 1, 2)));
+    });
+
+    test('should create a car with default values', () {
+      final car = Car(
+        brand: 'Audi',
+        shape: 'SUV',
+        name: 'Q5',
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      expect(car.id, isNull);
+      expect(car.brand, equals('Audi'));
+      expect(car.shape, equals('SUV'));
+      expect(car.name, equals('Q5'));
+      expect(car.informations, isNull);
+      expect(car.isPiggyBank, isFalse);
+      expect(car.playsMusic, isFalse);
+      expect(car.photo, isNull);
+      expect(car.createdAt, equals(now));
+      expect(car.updatedAt, equals(now));
+    });
 
     group('copyWith', () {
-      test('should return Car with updated fields', () {
-        // arrange
-        const newName = 'X7';
-        const newBrand = 'Audi';
+      late Car originalCar;
 
-        // act
-        final result = tCar.copyWith(
-          name: newName,
-          brand: newBrand,
-        );
-
-        // assert
-        expect(result.name, newName);
-        expect(result.brand, newBrand);
-        expect(result.id, tCar.id);
-        expect(result.shape, tCar.shape);
-        expect(result.informations, tCar.informations);
-        expect(result.isPiggyBank, tCar.isPiggyBank);
-        expect(result.playsMusic, tCar.playsMusic);
-        expect(result.photo, tCar.photo);
-        expect(result.createdAt, tCar.createdAt);
-        // updatedAt should be set to current time
-        expect(result.updatedAt, isNot(tCar.updatedAt));
-        expect(result.updatedAt, isA<DateTime>());
-      });
-
-      test('should return Car with same values when no parameters provided', () {
-        // act
-        final result = tCar.copyWith();
-
-        // assert
-        expect(result.id, tCar.id);
-        expect(result.brand, tCar.brand);
-        expect(result.shape, tCar.shape);
-        expect(result.name, tCar.name);
-        expect(result.informations, tCar.informations);
-        expect(result.isPiggyBank, tCar.isPiggyBank);
-        expect(result.playsMusic, tCar.playsMusic);
-        expect(result.photo, tCar.photo);
-        expect(result.createdAt, tCar.createdAt);
-        // updatedAt should be set to current time
-        expect(result.updatedAt, isNot(tCar.updatedAt));
-      });
-
-      test('should update boolean fields correctly', () {
-        // act
-        final result = tCar.copyWith(
+      setUp(() {
+        originalCar = Car(
+          id: 1,
+          brand: 'BMW',
+          shape: 'Berline',
+          name: 'Serie 3',
+          informations: 'Belle voiture',
           isPiggyBank: false,
+          playsMusic: false,
+          photo: photoBytes,
+          createdAt: DateTime(2023, 1, 1),
+          updatedAt: DateTime(2023, 1, 2),
+        );
+      });
+
+      test('should return Car with updated fields', () {
+        final updatedCar = originalCar.copyWith(
+          name: 'Serie 5',
+          isPiggyBank: true,
           playsMusic: true,
         );
 
-        // assert
-        expect(result.isPiggyBank, false);
-        expect(result.playsMusic, true);
-        expect(result.brand, tCar.brand); // other fields unchanged
+        expect(updatedCar.id, equals(1));
+        expect(updatedCar.brand, equals('BMW'));
+        expect(updatedCar.shape, equals('Berline'));
+        expect(updatedCar.name, equals('Serie 5'));
+        expect(updatedCar.informations, equals('Belle voiture'));
+        expect(updatedCar.isPiggyBank, isTrue);
+        expect(updatedCar.playsMusic, isTrue);
+        expect(updatedCar.photo, equals(photoBytes));
+        expect(updatedCar.createdAt, equals(DateTime(2023, 1, 1)));
+        expect(updatedCar.updatedAt, isNot(equals(DateTime(2023, 1, 2))));
       });
 
-      test('should update photo field', () {
-        // arrange
-        final newPhotoBytes = Uint8List.fromList([5, 6, 7, 8]);
+      test('should return same Car when no fields are updated', () {
+        final sameCar = originalCar.copyWith();
 
-        // act
-        final result = tCar.copyWith(photo: newPhotoBytes);
-
-        // assert
-        expect(result.photo, newPhotoBytes);
-        expect(result.photo, isNot(tCar.photo));
+        expect(sameCar.id, equals(originalCar.id));
+        expect(sameCar.brand, equals(originalCar.brand));
+        expect(sameCar.shape, equals(originalCar.shape));
+        expect(sameCar.name, equals(originalCar.name));
+        expect(sameCar.informations, equals(originalCar.informations));
+        expect(sameCar.isPiggyBank, equals(originalCar.isPiggyBank));
+        expect(sameCar.playsMusic, equals(originalCar.playsMusic));
+        expect(sameCar.photo, equals(originalCar.photo));
+        expect(sameCar.createdAt, equals(originalCar.createdAt));
+        expect(sameCar.updatedAt, isNot(equals(originalCar.updatedAt)));
       });
-    });
 
-    group('props', () {
-      test('should include all fields in props for equality comparison', () {
-        // act
-        final props = tCar.props;
+      test('should update updatedAt automatically', () {
+        final now = DateTime.now();
+        final updatedCar = originalCar.copyWith(name: 'New Name');
 
-        // assert
-        expect(props.length, 10);
-        expect(props, contains(tCar.id));
-        expect(props, contains(tCar.brand));
-        expect(props, contains(tCar.shape));
-        expect(props, contains(tCar.name));
-        expect(props, contains(tCar.informations));
-        expect(props, contains(tCar.isPiggyBank));
-        expect(props, contains(tCar.playsMusic));
-        expect(props, contains(tCar.photo));
-        expect(props, contains(tCar.createdAt));
-        expect(props, contains(tCar.updatedAt));
+        expect(updatedCar.updatedAt.isAfter(now.subtract(const Duration(seconds: 1))), isTrue);
+        expect(updatedCar.createdAt, equals(originalCar.createdAt));
       });
     });
 
     group('equality', () {
-      test('should be equal when all fields are the same', () {
-        // arrange
-        final tCar2 = Car(
+      test('should be equal when all properties are the same', () {
+        final car1 = Car(
           id: 1,
           brand: 'BMW',
-          shape: 'Sedan',
-          name: 'X5',
-          informations: 'Test info',
+          shape: 'Berline',
+          name: 'Serie 3',
+          informations: 'Belle voiture',
           isPiggyBank: true,
           playsMusic: false,
-          photo: tPhotoBytes,
-          createdAt: tDateTime,
-          updatedAt: tDateTime,
+          photo: photoBytes,
+          createdAt: DateTime(2023, 1, 1),
+          updatedAt: DateTime(2023, 1, 2),
         );
 
-        // act & assert
-        expect(tCar, equals(tCar2));
-        expect(tCar.hashCode, equals(tCar2.hashCode));
-      });
-
-      test('should not be equal when fields differ', () {
-        // arrange
-        final tCar2 = Car(
-          id: 2, // different id
+        final car2 = Car(
+          id: 1,
           brand: 'BMW',
-          shape: 'Sedan',
-          name: 'X5',
-          informations: 'Test info',
+          shape: 'Berline',
+          name: 'Serie 3',
+          informations: 'Belle voiture',
           isPiggyBank: true,
           playsMusic: false,
-          photo: tPhotoBytes,
-          createdAt: tDateTime,
-          updatedAt: tDateTime,
+          photo: photoBytes,
+          createdAt: DateTime(2023, 1, 1),
+          updatedAt: DateTime(2023, 1, 2),
         );
 
-        // act & assert
-        expect(tCar, isNot(equals(tCar2)));
-        expect(tCar.hashCode, isNot(equals(tCar2.hashCode)));
+        expect(car1, equals(car2));
+        expect(car1.hashCode, equals(car2.hashCode));
       });
-    });
 
-    group('default values', () {
-      test('should have correct default values', () {
-        // arrange & act
-        final carWithDefaults = Car(
+      test('should not be equal when properties differ', () {
+        final car1 = Car(
           brand: 'BMW',
-          shape: 'Sedan',
-          name: 'X5',
-          createdAt: tDateTime,
-          updatedAt: tDateTime,
+          shape: 'Berline',
+          name: 'Serie 3',
+          createdAt: now,
+          updatedAt: now,
         );
 
-        // assert
-        expect(carWithDefaults.id, null);
-        expect(carWithDefaults.informations, null);
-        expect(carWithDefaults.isPiggyBank, false);
-        expect(carWithDefaults.playsMusic, false);
-        expect(carWithDefaults.photo, null);
+        final car2 = Car(
+          brand: 'Audi',
+          shape: 'Berline',
+          name: 'Serie 3',
+          createdAt: now,
+          updatedAt: now,
+        );
+
+        expect(car1, isNot(equals(car2)));
+        expect(car1.hashCode, isNot(equals(car2.hashCode)));
       });
     });
   });

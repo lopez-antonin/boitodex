@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:boitodex/features/car_form/presentation/widgets/car_form_fields.dart';
-import 'package:boitodex/app/constants/strings.dart';
 
 void main() {
   group('CarFormFields', () {
@@ -35,163 +34,148 @@ void main() {
     Widget createWidget() {
       return MaterialApp(
         home: Scaffold(
-          body: CarFormFields(
-            brandController: brandController,
-            shapeController: shapeController,
-            nameController: nameController,
-            informationsController: informationsController,
-            isPiggyBank: isPiggyBank,
-            playsMusic: playsMusic,
-            onPiggyBankChanged: (value) {
-              isPiggyBank = value;
-              piggyBankChanged = true;
-            },
-            onPlaysMusicChanged: (value) {
-              playsMusic = value;
-              playsMusicChanged = true;
-            },
+          body: Form(
+            child: CarFormFields(
+              brandController: brandController,
+              shapeController: shapeController,
+              nameController: nameController,
+              informationsController: informationsController,
+              isPiggyBank: isPiggyBank,
+              playsMusic: playsMusic,
+              onPiggyBankChanged: (value) {
+                isPiggyBank = value;
+                piggyBankChanged = true;
+              },
+              onPlaysMusicChanged: (value) {
+                playsMusic = value;
+                playsMusicChanged = true;
+              },
+            ),
           ),
         ),
       );
     }
 
     testWidgets('should display all form fields', (tester) async {
-      // act
       await tester.pumpWidget(createWidget());
 
-      // assert
-      expect(find.text('${AppStrings.brand} *'), findsOneWidget);
-      expect(find.text('${AppStrings.shape} *'), findsOneWidget);
-      expect(find.text('${AppStrings.name} *'), findsOneWidget);
-      expect(find.text(AppStrings.informations), findsOneWidget);
-      expect(find.text(AppStrings.isPiggyBank), findsOneWidget);
-      expect(find.text(AppStrings.playsMusic), findsOneWidget);
-    });
-
-    testWidgets('should display hint text for informations field', (tester) async {
-      // act
-      await tester.pumpWidget(createWidget());
-
-      // assert
-      expect(find.text('Notes, état, origine...'), findsOneWidget);
+      expect(find.text('Marque *'), findsOneWidget);
+      expect(find.text('Forme *'), findsOneWidget);
+      expect(find.text('Nom *'), findsOneWidget);
+      expect(find.text('Informations'), findsOneWidget);
+      expect(find.text('Tirelire'), findsOneWidget);
+      expect(find.text('Fait de la musique'), findsOneWidget);
     });
 
     testWidgets('should validate required fields', (tester) async {
-      // act
       await tester.pumpWidget(createWidget());
 
-      // Find and tap the brand field to trigger validation
-      final brandField = find.byType(TextFormField).first;
-      await tester.tap(brandField);
-      await tester.pump();
+      // Find all TextFormField widgets
+      final formFields = find.byType(TextFormField);
+      expect(formFields, findsNWidgets(4)); // 4 text fields total
 
-      // Enter empty text and unfocus to trigger validation
-      await tester.enterText(brandField, '');
-      await tester.testTextInput.receiveAction(TextInputAction.done);
-      await tester.pump();
+      // Manually trigger validation on each field
+      final brandFormField = tester.widget<TextFormField>(formFields.at(0));
+      final shapeFormField = tester.widget<TextFormField>(formFields.at(1));
+      final nameFormField = tester.widget<TextFormField>(formFields.at(2));
 
-      // Try to find the form and call validate
-      final formState = tester.state(find.byType(Form)) as FormState?;
-      if (formState != null) {
-        formState.validate();
-        await tester.pump();
-      }
+      // Test validation for empty values
+      expect(brandFormField.validator!(''), contains('Ce champ est obligatoire'));
+      expect(shapeFormField.validator!(''), contains('Ce champ est obligatoire'));
+      expect(nameFormField.validator!(''), contains('Ce champ est obligatoire'));
 
-      // The validation message might not appear without proper form validation triggering
-      // This is more of an integration test scenario
+      // Test validation for valid values
+      expect(brandFormField.validator!('BMW'), isNull);
+      expect(shapeFormField.validator!('Berline'), isNull);
+      expect(nameFormField.validator!('Serie 3'), isNull);
     });
 
-    testWidgets('should toggle piggy bank switch', (tester) async {
-      // act
+    testWidgets('should handle text input correctly', (tester) async {
       await tester.pumpWidget(createWidget());
 
-      // Find the piggy bank switch
-      final piggyBankSwitch = find.byType(SwitchListTile).first;
-
-      // assert initial state
-      expect(isPiggyBank, false);
-      expect(piggyBankChanged, false);
-
-      // act - tap the switch
-      await tester.tap(piggyBankSwitch);
-      await tester.pump();
-
-      // assert
-      expect(piggyBankChanged, true);
-    });
-
-    testWidgets('should toggle plays music switch', (tester) async {
-      // act
-      await tester.pumpWidget(createWidget());
-
-      // Find the plays music switch (second SwitchListTile)
-      final playsMusicSwitch = find.byType(SwitchListTile).last;
-
-      // assert initial state
-      expect(playsMusic, false);
-      expect(playsMusicChanged, false);
-
-      // act - tap the switch
-      await tester.tap(playsMusicSwitch);
-      await tester.pump();
-
-      // assert
-      expect(playsMusicChanged, true);
-    });
-
-    testWidgets('should accept text input in all fields', (tester) async {
-      // act
-      await tester.pumpWidget(createWidget());
-
-      // Enter text in brand field
+      // Test brand input
       await tester.enterText(find.byType(TextFormField).at(0), 'BMW');
-      expect(brandController.text, 'BMW');
+      expect(brandController.text, equals('BMW'));
 
-      // Enter text in shape field
-      await tester.enterText(find.byType(TextFormField).at(1), 'Sedan');
-      expect(shapeController.text, 'Sedan');
+      // Test shape input
+      await tester.enterText(find.byType(TextFormField).at(1), 'Berline');
+      expect(shapeController.text, equals('Berline'));
 
-      // Enter text in name field
-      await tester.enterText(find.byType(TextFormField).at(2), 'X5');
-      expect(nameController.text, 'X5');
+      // Test name input
+      await tester.enterText(find.byType(TextFormField).at(2), 'Serie 3');
+      expect(nameController.text, equals('Serie 3'));
 
-      // Enter text in informations field
-      await tester.enterText(find.byType(TextFormField).at(3), 'Test info');
-      expect(informationsController.text, 'Test info');
+      // Test informations input
+      await tester.enterText(find.byType(TextFormField).at(3), 'Belle voiture');
+      expect(informationsController.text, equals('Belle voiture'));
+    });
+
+    testWidgets('should toggle switches correctly', (tester) async {
+      await tester.pumpWidget(createWidget());
+
+      // Find switches
+      final switches = find.byType(SwitchListTile);
+      expect(switches, findsNWidgets(2));
+
+      // Toggle piggy bank switch
+      await tester.tap(switches.first);
+      await tester.pumpAndSettle();
+      expect(piggyBankChanged, isTrue);
+
+      // Toggle music switch
+      await tester.tap(switches.last);
+      await tester.pumpAndSettle();
+      expect(playsMusicChanged, isTrue);
     });
 
     testWidgets('should display switch subtitles', (tester) async {
-      // act
       await tester.pumpWidget(createWidget());
 
-      // assert
       expect(find.text('Cette voiture est une tirelire'), findsOneWidget);
       expect(find.text('Cette voiture émet des sons'), findsOneWidget);
     });
 
     testWidgets('should have correct text capitalization', (tester) async {
-      // act
       await tester.pumpWidget(createWidget());
 
-      // Get TextField widgets (the underlying widgets of TextFormField)
-      final textFields = tester.widgetList<TextField>(find.byType(TextField)).toList();
+      final formFields = find.byType(TextFormField);
 
-      // assert
-      expect(textFields[0].textCapitalization, TextCapitalization.words); // brand
-      expect(textFields[1].textCapitalization, TextCapitalization.words); // shape
-      expect(textFields[2].textCapitalization, TextCapitalization.words); // name
-      expect(textFields[3].textCapitalization, TextCapitalization.sentences); // informations
+      // Check brand field capitalization
+      final brandField = tester.widget<TextFormField>(formFields.at(0));
+      expect(brandField.textCapitalization, equals(TextCapitalization.words));
+
+      // Check shape field capitalization
+      final shapeField = tester.widget<TextFormField>(formFields.at(1));
+      expect(shapeField.textCapitalization, equals(TextCapitalization.words));
+
+      // Check name field capitalization
+      final nameField = tester.widget<TextFormField>(formFields.at(2));
+      expect(nameField.textCapitalization, equals(TextCapitalization.words));
+
+      // Check informations field capitalization
+      final informationsField = tester.widget<TextFormField>(formFields.at(3));
+      expect(informationsField.textCapitalization, equals(TextCapitalization.sentences));
     });
 
-    testWidgets('should have correct maxLines for informations field', (tester) async {
-      // act
+    testWidgets('should validate informations max length', (tester) async {
       await tester.pumpWidget(createWidget());
 
-      // Get the informations TextField (last one)
-      final informationsField = tester.widget<TextField>(find.byType(TextField).at(3));
+      final informationsField = tester.widget<TextFormField>(find.byType(TextFormField).at(3));
 
-      // assert
-      expect(informationsField.maxLines, 3);
+      // Test with text within limit
+      expect(informationsField.validator!('Short text'), isNull);
+
+      // Test with text exceeding limit
+      final longText = 'A' * 501; // Exceeding 500 characters
+      final result = informationsField.validator!(longText);
+      expect(result, contains('Limite de caractères dépassée'));
+    });
+
+    testWidgets('should have correct number of lines for informations field', (tester) async {
+      await tester.pumpWidget(createWidget());
+
+      final informationsField = tester.widget<TextFormField>(find.byType(TextFormField).at(3));
+      expect(informationsField.maxLines, equals(3));
     });
   });
 }

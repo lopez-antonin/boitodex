@@ -3,7 +3,6 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-
 import 'package:boitodex/core/error/failures.dart';
 import 'package:boitodex/domain/entities/car.dart';
 import 'package:boitodex/domain/usecases/cars/add_car.dart';
@@ -16,185 +15,145 @@ import 'car_form_viewmodel_test.mocks.dart';
 
 @GenerateMocks([AddCar, UpdateCar, DeleteCar, PickImage])
 void main() {
-  late CarFormViewModel viewModel;
-  late MockAddCar mockAddCar;
-  late MockUpdateCar mockUpdateCar;
-  late MockDeleteCar mockDeleteCar;
-  late MockPickImage mockPickImage;
-
-  setUp(() {
-    mockAddCar = MockAddCar();
-    mockUpdateCar = MockUpdateCar();
-    mockDeleteCar = MockDeleteCar();
-    mockPickImage = MockPickImage();
-    viewModel = CarFormViewModel(
-      addCar: mockAddCar,
-      updateCar: mockUpdateCar,
-      deleteCar: mockDeleteCar,
-      pickImage: mockPickImage,
-    );
-  });
-
-  tearDown(() {
-    viewModel.dispose();
-  });
-
-  final tDateTime = DateTime(2023, 1, 1);
-  final tCar = Car(
-    id: 1,
-    brand: 'BMW',
-    shape: 'Sedan',
-    name: 'X5',
-    informations: 'Test info',
-    isPiggyBank: true,
-    playsMusic: false,
-    createdAt: tDateTime,
-    updatedAt: tDateTime,
-  );
-
-  final tPhotoBytes = Uint8List.fromList([1, 2, 3, 4]);
-
   group('CarFormViewModel', () {
+    late CarFormViewModel viewModel;
+    late MockAddCar mockAddCar;
+    late MockUpdateCar mockUpdateCar;
+    late MockDeleteCar mockDeleteCar;
+    late MockPickImage mockPickImage;
+
+    setUp(() {
+      mockAddCar = MockAddCar();
+      mockUpdateCar = MockUpdateCar();
+      mockDeleteCar = MockDeleteCar();
+      mockPickImage = MockPickImage();
+
+      viewModel = CarFormViewModel(
+        addCar: mockAddCar,
+        updateCar: mockUpdateCar,
+        deleteCar: mockDeleteCar,
+        pickImage: mockPickImage,
+      );
+    });
+
+    tearDown(() {
+      viewModel.dispose();
+    });
+
+    final testCar = Car(
+      id: 1,
+      brand: 'BMW',
+      shape: 'Berline',
+      name: 'Serie 3',
+      informations: 'Belle voiture',
+      isPiggyBank: true,
+      playsMusic: false,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    test('initial state should be correct', () {
+      expect(viewModel.isPiggyBank, isFalse);
+      expect(viewModel.playsMusic, isFalse);
+      expect(viewModel.photoBytes, isNull);
+      expect(viewModel.isLoading, isFalse);
+      expect(viewModel.errorMessage, isNull);
+      expect(viewModel.isEditing, isFalse);
+    });
+
     group('initializeWithCar', () {
-      test('should initialize form with empty values when car is null', () {
+      test('should initialize with car data for editing', () {
+        // act
+        viewModel.initializeWithCar(testCar);
+
+        // assert
+        expect(viewModel.brandController.text, equals('BMW'));
+        expect(viewModel.shapeController.text, equals('Berline'));
+        expect(viewModel.nameController.text, equals('Serie 3'));
+        expect(viewModel.informationsController.text, equals('Belle voiture'));
+        expect(viewModel.isPiggyBank, isTrue);
+        expect(viewModel.playsMusic, isFalse);
+        expect(viewModel.isEditing, isTrue);
+      });
+
+      test('should initialize with empty data for new car', () {
         // act
         viewModel.initializeWithCar(null);
 
         // assert
-        expect(viewModel.brandController.text, '');
-        expect(viewModel.shapeController.text, '');
-        expect(viewModel.nameController.text, '');
-        expect(viewModel.informationsController.text, '');
-        expect(viewModel.isPiggyBank, false);
-        expect(viewModel.playsMusic, false);
-        expect(viewModel.photoBytes, null);
-        expect(viewModel.isEditing, false);
-      });
-
-      test('should initialize form with car data when car is provided', () {
-        // act
-        viewModel.initializeWithCar(tCar);
-
-        // assert
-        expect(viewModel.brandController.text, 'BMW');
-        expect(viewModel.shapeController.text, 'Sedan');
-        expect(viewModel.nameController.text, 'X5');
-        expect(viewModel.informationsController.text, 'Test info');
-        expect(viewModel.isPiggyBank, true);
-        expect(viewModel.playsMusic, false);
-        expect(viewModel.isEditing, true);
-      });
-    });
-
-    group('setters', () {
-      test('should update isPiggyBank and notify listeners', () {
-        // arrange
-        var listenerCalled = false;
-        viewModel.addListener(() => listenerCalled = true);
-
-        // act
-        viewModel.setPiggyBank(true);
-
-        // assert
-        expect(viewModel.isPiggyBank, true);
-        expect(listenerCalled, true);
-      });
-
-      test('should update playsMusic and notify listeners', () {
-        // arrange
-        var listenerCalled = false;
-        viewModel.addListener(() => listenerCalled = true);
-
-        // act
-        viewModel.setPlaysMusic(true);
-
-        // assert
-        expect(viewModel.playsMusic, true);
-        expect(listenerCalled, true);
-      });
-
-      test('should update photo and notify listeners', () {
-        // arrange
-        var listenerCalled = false;
-        viewModel.addListener(() => listenerCalled = true);
-
-        // act
-        viewModel.setPhoto(tPhotoBytes);
-
-        // assert
-        expect(viewModel.photoBytes, tPhotoBytes);
-        expect(listenerCalled, true);
+        expect(viewModel.brandController.text, isEmpty);
+        expect(viewModel.shapeController.text, isEmpty);
+        expect(viewModel.nameController.text, isEmpty);
+        expect(viewModel.informationsController.text, isEmpty);
+        expect(viewModel.isPiggyBank, isFalse);
+        expect(viewModel.playsMusic, isFalse);
+        expect(viewModel.isEditing, isFalse);
       });
     });
 
     group('saveCar', () {
       setUp(() {
         viewModel.brandController.text = 'BMW';
-        viewModel.shapeController.text = 'Sedan';
-        viewModel.nameController.text = 'X5';
-        viewModel.informationsController.text = 'Test info';
+        viewModel.shapeController.text = 'Berline';
+        viewModel.nameController.text = 'Serie 3';
       });
 
-      test('should add car successfully when not editing', () async {
+      test('should add new car successfully', () async {
         // arrange
-        when(mockAddCar(any))
-            .thenAnswer((_) async => const Right(1));
+        when(mockAddCar(any)).thenAnswer((_) async => const Right(1));
 
         // act
         final result = await viewModel.saveCar();
 
         // assert
-        expect(result, true);
-        expect(viewModel.isLoading, false);
-        expect(viewModel.errorMessage, null);
-        verify(mockAddCar(any));
+        expect(result, isTrue);
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.errorMessage, isNull);
+        verify(mockAddCar(any)).called(1);
         verifyNever(mockUpdateCar(any));
       });
 
-      test('should update car successfully when editing', () async {
+      test('should update existing car successfully', () async {
         // arrange
-        viewModel.initializeWithCar(tCar);
-        when(mockUpdateCar(any))
-            .thenAnswer((_) async => const Right(null));
+        viewModel.initializeWithCar(testCar);
+        when(mockUpdateCar(any)).thenAnswer((_) async => const Right(null));
 
         // act
         final result = await viewModel.saveCar();
 
         // assert
-        expect(result, true);
-        expect(viewModel.isLoading, false);
-        expect(viewModel.errorMessage, null);
-        verify(mockUpdateCar(any));
+        expect(result, isTrue);
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.errorMessage, isNull);
+        verify(mockUpdateCar(any)).called(1);
         verifyNever(mockAddCar(any));
       });
 
       test('should return false and set error when add car fails', () async {
         // arrange
-        when(mockAddCar(any))
-            .thenAnswer((_) async => const Left(CacheFailure('Add failed')));
+        when(mockAddCar(any)).thenAnswer((_) async => const Left(CacheFailure('Save error')));
 
         // act
         final result = await viewModel.saveCar();
 
         // assert
-        expect(result, false);
-        expect(viewModel.isLoading, false);
-        expect(viewModel.errorMessage, 'Add failed');
+        expect(result, isFalse);
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.errorMessage, equals('Save error'));
       });
 
       test('should return false and set error when update car fails', () async {
         // arrange
-        viewModel.initializeWithCar(tCar);
-        when(mockUpdateCar(any))
-            .thenAnswer((_) async => const Left(CacheFailure('Update failed')));
+        viewModel.initializeWithCar(testCar);
+        when(mockUpdateCar(any)).thenAnswer((_) async => const Left(CacheFailure('Update error')));
 
         // act
         final result = await viewModel.saveCar();
 
         // assert
-        expect(result, false);
-        expect(viewModel.isLoading, false);
-        expect(viewModel.errorMessage, 'Update failed');
+        expect(result, isFalse);
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.errorMessage, equals('Update error'));
       });
     });
 
@@ -204,114 +163,130 @@ void main() {
         final result = await viewModel.deleteCurrentCar();
 
         // assert
-        expect(result, false);
+        expect(result, isFalse);
         verifyNever(mockDeleteCar(any));
       });
 
       test('should delete car successfully when editing', () async {
         // arrange
-        viewModel.initializeWithCar(tCar);
-        when(mockDeleteCar(any))
-            .thenAnswer((_) async => const Right(null));
+        viewModel.initializeWithCar(testCar);
+        when(mockDeleteCar(1)).thenAnswer((_) async => const Right(null));
 
         // act
         final result = await viewModel.deleteCurrentCar();
 
         // assert
-        expect(result, true);
-        expect(viewModel.isLoading, false);
-        expect(viewModel.errorMessage, null);
-        verify(mockDeleteCar(1));
+        expect(result, isTrue);
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.errorMessage, isNull);
+        verify(mockDeleteCar(1)).called(1);
       });
 
       test('should return false and set error when delete fails', () async {
         // arrange
-        viewModel.initializeWithCar(tCar);
-        when(mockDeleteCar(any))
-            .thenAnswer((_) async => const Left(CacheFailure('Delete failed')));
+        viewModel.initializeWithCar(testCar);
+        when(mockDeleteCar(1)).thenAnswer((_) async => const Left(CacheFailure('Delete error')));
 
         // act
         final result = await viewModel.deleteCurrentCar();
 
         // assert
-        expect(result, false);
-        expect(viewModel.isLoading, false);
-        expect(viewModel.errorMessage, 'Delete failed');
+        expect(result, isFalse);
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.errorMessage, equals('Delete error'));
       });
     });
 
-    group('pickImage', () {
-      test('should pick image from gallery successfully', () async {
+    group('pickImageFromGallery', () {
+      test('should set photo when pick image succeeds', () async {
         // arrange
-        when(mockPickImage.fromGallery())
-            .thenAnswer((_) async => Right(tPhotoBytes));
+        final imageBytes = Uint8List.fromList([1, 2, 3, 4]);
+        when(mockPickImage.fromGallery()).thenAnswer((_) async => Right(imageBytes));
 
         // act
         await viewModel.pickImageFromGallery();
 
         // assert
-        expect(viewModel.photoBytes, tPhotoBytes);
-        expect(viewModel.errorMessage, null);
-        verify(mockPickImage.fromGallery());
+        expect(viewModel.photoBytes, equals(imageBytes));
+        expect(viewModel.errorMessage, isNull);
+        verify(mockPickImage.fromGallery()).called(1);
       });
 
-      test('should set error when pick image from gallery fails', () async {
+      test('should set error when pick image fails', () async {
         // arrange
-        when(mockPickImage.fromGallery())
-            .thenAnswer((_) async => const Left(ImageProcessingFailure('Pick failed')));
+        when(mockPickImage.fromGallery()).thenAnswer((_) async => const Left(ImageProcessingFailure('Pick error')));
 
         // act
         await viewModel.pickImageFromGallery();
 
         // assert
-        expect(viewModel.photoBytes, null);
-        expect(viewModel.errorMessage, 'Pick failed');
-      });
-
-      test('should pick image from camera successfully', () async {
-        // arrange
-        when(mockPickImage.fromCamera())
-            .thenAnswer((_) async => Right(tPhotoBytes));
-
-        // act
-        await viewModel.pickImageFromCamera();
-
-        // assert
-        expect(viewModel.photoBytes, tPhotoBytes);
-        expect(viewModel.errorMessage, null);
-        verify(mockPickImage.fromCamera());
-      });
-
-      test('should set error when pick image from camera fails', () async {
-        // arrange
-        when(mockPickImage.fromCamera())
-            .thenAnswer((_) async => const Left(ImageProcessingFailure('Camera failed')));
-
-        // act
-        await viewModel.pickImageFromCamera();
-
-        // assert
-        expect(viewModel.photoBytes, null);
-        expect(viewModel.errorMessage, 'Camera failed');
+        expect(viewModel.photoBytes, isNull);
+        expect(viewModel.errorMessage, equals('Pick error'));
       });
     });
 
-    group('clearError', () {
-      test('should clear error message and notify listeners', () {
+    group('pickImageFromCamera', () {
+      test('should set photo when take photo succeeds', () async {
         // arrange
-        viewModel.initializeWithCar(tCar);
-        // Set an error first
-        viewModel.pickImageFromCamera(); // This will set an error if we mock it to fail
+        final imageBytes = Uint8List.fromList([1, 2, 3, 4]);
+        when(mockPickImage.fromCamera()).thenAnswer((_) async => Right(imageBytes));
 
-        var listenerCalled = false;
-        viewModel.addListener(() => listenerCalled = true);
+        // act
+        await viewModel.pickImageFromCamera();
 
+        // assert
+        expect(viewModel.photoBytes, equals(imageBytes));
+        expect(viewModel.errorMessage, isNull);
+        verify(mockPickImage.fromCamera()).called(1);
+      });
+
+      test('should set error when take photo fails', () async {
+        // arrange
+        when(mockPickImage.fromCamera()).thenAnswer((_) async => const Left(ImageProcessingFailure('Camera error')));
+
+        // act
+        await viewModel.pickImageFromCamera();
+
+        // assert
+        expect(viewModel.photoBytes, isNull);
+        expect(viewModel.errorMessage, equals('Camera error'));
+      });
+    });
+
+    group('setters', () {
+      test('should set piggy bank value and notify listeners', () {
+        // act
+        viewModel.setPiggyBank(true);
+
+        // assert
+        expect(viewModel.isPiggyBank, isTrue);
+      });
+
+      test('should set plays music value and notify listeners', () {
+        // act
+        viewModel.setPlaysMusic(true);
+
+        // assert
+        expect(viewModel.playsMusic, isTrue);
+      });
+
+      test('should set photo bytes and notify listeners', () {
+        // arrange
+        final photoBytes = Uint8List.fromList([1, 2, 3, 4]);
+
+        // act
+        viewModel.setPhoto(photoBytes);
+
+        // assert
+        expect(viewModel.photoBytes, equals(photoBytes));
+      });
+
+      test('should clear error message', () {
         // act
         viewModel.clearError();
 
         // assert
-        expect(viewModel.errorMessage, null);
-        expect(listenerCalled, true);
+        expect(viewModel.errorMessage, isNull);
       });
     });
   });

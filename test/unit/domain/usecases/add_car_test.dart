@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-
 import 'package:boitodex/core/error/failures.dart';
 import 'package:boitodex/domain/entities/car.dart';
 import 'package:boitodex/domain/repositories/car_repository.dart';
@@ -12,49 +11,51 @@ import 'add_car_test.mocks.dart';
 
 @GenerateMocks([CarRepository])
 void main() {
-  late AddCar usecase;
-  late MockCarRepository mockRepository;
+  group('AddCar', () {
+    late AddCar usecase;
+    late MockCarRepository mockRepository;
 
-  setUp(() {
-    mockRepository = MockCarRepository();
-    usecase = AddCar(mockRepository);
-  });
+    setUp(() {
+      mockRepository = MockCarRepository();
+      usecase = AddCar(mockRepository);
+    });
 
-  final tCar = Car(
-    brand: 'Test Brand',
-    shape: 'Test Shape',
-    name: 'Test Name',
-    createdAt: DateTime.now(),
-    updatedAt: DateTime.now(),
-  );
+    final testCar = Car(
+      brand: 'BMW',
+      shape: 'Berline',
+      name: 'Serie 3',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
 
-  const tId = 1;
+    test('should add car when repository call is successful', () async {
+      // arrange
+      const expectedId = 1;
+      when(mockRepository.addCar(testCar))
+          .thenAnswer((_) async => const Right(expectedId));
 
-  test('should add car and return id when repository call is successful', () async {
-    // arrange
-    when(mockRepository.addCar(any))
-        .thenAnswer((_) async => const Right(tId));
+      // act
+      final result = await usecase(testCar);
 
-    // act
-    final result = await usecase(tCar);
+      // assert
+      expect(result, const Right(expectedId));
+      verify(mockRepository.addCar(testCar)).called(1);
+      verifyNoMoreInteractions(mockRepository);
+    });
 
-    // assert
-    expect(result, const Right(tId));
-    verify(mockRepository.addCar(tCar));
-    verifyNoMoreInteractions(mockRepository);
-  });
+    test('should return failure when repository call fails', () async {
+      // arrange
+      const failure = CacheFailure('Database error');
+      when(mockRepository.addCar(testCar))
+          .thenAnswer((_) async => const Left(failure));
 
-  test('should return failure when repository call fails', () async {
-    // arrange
-    when(mockRepository.addCar(any))
-        .thenAnswer((_) async => const Left(CacheFailure('Cache error')));
+      // act
+      final result = await usecase(testCar);
 
-    // act
-    final result = await usecase(tCar);
-
-    // assert
-    expect(result, const Left(CacheFailure('Cache error')));
-    verify(mockRepository.addCar(tCar));
-    verifyNoMoreInteractions(mockRepository);
+      // assert
+      expect(result, const Left(failure));
+      verify(mockRepository.addCar(testCar)).called(1);
+      verifyNoMoreInteractions(mockRepository);
+    });
   });
 }
