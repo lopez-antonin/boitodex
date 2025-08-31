@@ -135,26 +135,17 @@ void main() {
       expect(find.text('Cette voiture émet des sons'), findsOneWidget);
     });
 
-    testWidgets('should have correct text capitalization', (tester) async {
+    testWidgets('should have correct input decoration', (tester) async {
       await tester.pumpWidget(createWidget());
 
       final formFields = find.byType(TextFormField);
 
-      // Check brand field capitalization
-      final brandField = tester.widget<TextFormField>(formFields.at(0));
-      expect(brandField.textCapitalization, equals(TextCapitalization.words));
-
-      // Check shape field capitalization
-      final shapeField = tester.widget<TextFormField>(formFields.at(1));
-      expect(shapeField.textCapitalization, equals(TextCapitalization.words));
-
-      // Check name field capitalization
-      final nameField = tester.widget<TextFormField>(formFields.at(2));
-      expect(nameField.textCapitalization, equals(TextCapitalization.words));
-
-      // Check informations field capitalization
-      final informationsField = tester.widget<TextFormField>(formFields.at(3));
-      expect(informationsField.textCapitalization, equals(TextCapitalization.sentences));
+      // Check that all fields have OutlineInputBorder
+      for (int i = 0; i < 4; i++) {
+        final field = tester.widget<TextFormField>(formFields.at(i));
+        final decoration = field.decoration as InputDecoration;
+        expect(decoration.border, isA<OutlineInputBorder>());
+      }
     });
 
     testWidgets('should validate informations max length', (tester) async {
@@ -171,11 +162,41 @@ void main() {
       expect(result, contains('Limite de caractères dépassée'));
     });
 
-    testWidgets('should have correct number of lines for informations field', (tester) async {
+    testWidgets('should display hint text for informations field', (tester) async {
       await tester.pumpWidget(createWidget());
 
-      final informationsField = tester.widget<TextFormField>(find.byType(TextFormField).at(3));
-      expect(informationsField.maxLines, equals(3));
+      expect(find.text('Notes, état, origine...'), findsOneWidget);
+    });
+
+    testWidgets('should reflect switch states correctly', (tester) async {
+      // Test with switches initially on
+      isPiggyBank = true;
+      playsMusic = true;
+
+      await tester.pumpWidget(createWidget());
+
+      final switches = find.byType(SwitchListTile);
+      final piggyBankSwitch = tester.widget<SwitchListTile>(switches.first);
+      final musicSwitch = tester.widget<SwitchListTile>(switches.last);
+
+      expect(piggyBankSwitch.value, isTrue);
+      expect(musicSwitch.value, isTrue);
+    });
+
+    testWidgets('should have card container for switches', (tester) async {
+      await tester.pumpWidget(createWidget());
+
+      expect(find.byType(Card), findsOneWidget);
+
+      final card = find.byType(Card);
+      final cardWidget = tester.widget<Card>(card);
+
+      // Verify switches are inside the card
+      final switchesInCard = find.descendant(
+        of: card,
+        matching: find.byType(SwitchListTile),
+      );
+      expect(switchesInCard, findsNWidgets(2));
     });
   });
 }

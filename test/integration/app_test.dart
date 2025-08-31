@@ -10,7 +10,7 @@ void main() {
   group('Boitodex App Integration Tests', () {
     setUpAll(() async {
       // Reset GetIt before each test
-      if (locator.isRegistered<dynamic>()) {
+      if (locator.isRegistered<Object>()) {
         await locator.reset();
       }
       await setupLocator();

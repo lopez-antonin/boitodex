@@ -69,12 +69,14 @@ void main() {
       expect(find.text('Musique'), findsNothing);
     });
 
-    testWidgets('should not display informations when null or empty', (tester) async {
+    testWidgets('should not display informations when null', (tester) async {
       final carWithoutInfo = testCar.copyWith(informations: null);
       await tester.pumpWidget(createWidget(carWithoutInfo));
 
       expect(find.text('Test informations'), findsNothing);
+    });
 
+    testWidgets('should not display informations when empty string', (tester) async {
       final carWithEmptyInfo = testCar.copyWith(informations: '');
       await tester.pumpWidget(createWidget(carWithEmptyInfo));
 
@@ -172,6 +174,7 @@ void main() {
       final carOnlyPiggyBank = testCar.copyWith(
         isPiggyBank: true,
         playsMusic: false,
+        informations: null, // Remove informations to avoid conflicts
       );
 
       await tester.pumpWidget(createWidget(carOnlyPiggyBank));
@@ -186,6 +189,7 @@ void main() {
       final carOnlyMusic = testCar.copyWith(
         isPiggyBank: false,
         playsMusic: true,
+        informations: null, // Remove informations to avoid conflicts
       );
 
       await tester.pumpWidget(createWidget(carOnlyMusic));
@@ -204,6 +208,27 @@ void main() {
 
       final informationsText = tester.widget<Text>(find.text('Test informations'));
       expect(informationsText.style?.fontStyle, equals(FontStyle.italic));
+    });
+
+    testWidgets('should display delete button correctly', (tester) async {
+      await tester.pumpWidget(createWidget(testCar));
+
+      final deleteButton = find.byIcon(Icons.delete_outline);
+      expect(deleteButton, findsOneWidget);
+
+      final iconButton = tester.widget<IconButton>(find.byType(IconButton));
+      expect(iconButton.color, equals(Colors.red));
+    });
+
+    testWidgets('should have correct image dimensions', (tester) async {
+      await tester.pumpWidget(createWidget(testCar));
+
+      final placeholder = find.byIcon(Icons.directions_car);
+      final container = tester.widget<Container>(
+        find.ancestor(of: placeholder, matching: find.byType(Container)).first,
+      );
+
+      expect(container.constraints, isNotNull);
     });
   });
 }

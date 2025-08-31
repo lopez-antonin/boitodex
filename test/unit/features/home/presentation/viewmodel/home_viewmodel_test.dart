@@ -76,9 +76,9 @@ void main() {
         // arrange
         when(mockRepository.getBrands()).thenAnswer((_) async => const Right(['BMW', 'Audi']));
         when(mockRepository.getShapes()).thenAnswer((_) async => const Right(['Berline', 'SUV']));
-        when(mockGetCars(
-          filter: any(named: 'filter'),
-          limit: any(named: 'limit'),
+        when(mockGetCars.call(
+          filter: anyNamed('filter'),
+          limit: anyNamed('limit'),
         )).thenAnswer((_) async => Right(testCars));
 
         // act
@@ -96,9 +96,9 @@ void main() {
         // arrange
         when(mockRepository.getBrands()).thenAnswer((_) async => const Right([]));
         when(mockRepository.getShapes()).thenAnswer((_) async => const Right([]));
-        when(mockGetCars(
-          filter: any(named: 'filter'),
-          limit: any(named: 'limit'),
+        when(mockGetCars.call(
+          filter: anyNamed('filter'),
+          limit: anyNamed('limit'),
         )).thenAnswer((_) async => const Left(CacheFailure('Database error')));
 
         // act
@@ -114,9 +114,9 @@ void main() {
         // arrange
         when(mockRepository.getBrands()).thenAnswer((_) async => const Left(CacheFailure('Brands error')));
         when(mockRepository.getShapes()).thenAnswer((_) async => const Right(['SUV']));
-        when(mockGetCars(
-          filter: any(named: 'filter'),
-          limit: any(named: 'limit'),
+        when(mockGetCars.call(
+          filter: anyNamed('filter'),
+          limit: anyNamed('limit'),
         )).thenAnswer((_) async => Right(testCars));
 
         // act
@@ -130,16 +130,63 @@ void main() {
       });
     });
 
+    group('loadMoreCars', () {
+      test('should load more cars when has more data', () async {
+        // arrange
+        viewModel.cars.addAll(testCars); // Add initial cars
+        when(mockGetCars.call(
+          filter: anyNamed('filter'),
+          limit: anyNamed('limit'),
+          offset: anyNamed('offset'),
+        )).thenAnswer((_) async => Right([
+          Car(
+            id: 3,
+            brand: 'Mercedes',
+            shape: 'Coupe',
+            name: 'C63',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+        ]));
+
+        // act
+        await viewModel.loadMoreCars();
+
+        // assert
+        expect(viewModel.cars.length, equals(3));
+        verify(mockGetCars.call(
+          filter: anyNamed('filter'),
+          limit: anyNamed('limit'),
+          offset: anyNamed('offset'),
+        )).called(1);
+      });
+
+      test('should not load more when already loading', () async {
+        // arrange
+        viewModel.loadData(); // Start loading
+
+        // act
+        await viewModel.loadMoreCars();
+
+        // assert
+        verifyNever(mockGetCars.call(
+          filter: anyNamed('filter'),
+          limit: anyNamed('limit'),
+          offset: anyNamed('offset'),
+        ));
+      });
+    });
+
     group('deleteCarById', () {
       test('should delete car successfully and refresh list', () async {
         // arrange
         const carId = 1;
-        when(mockDeleteCar(carId)).thenAnswer((_) async => const Right(null));
+        when(mockDeleteCar.call(carId)).thenAnswer((_) async => const Right(null));
         when(mockRepository.getBrands()).thenAnswer((_) async => const Right([]));
         when(mockRepository.getShapes()).thenAnswer((_) async => const Right([]));
-        when(mockGetCars(
-          filter: any(named: 'filter'),
-          limit: any(named: 'limit'),
+        when(mockGetCars.call(
+          filter: anyNamed('filter'),
+          limit: anyNamed('limit'),
         )).thenAnswer((_) async => const Right([]));
 
         // act
@@ -147,14 +194,14 @@ void main() {
 
         // assert
         expect(result, isTrue);
-        verify(mockDeleteCar(carId)).called(1);
+        verify(mockDeleteCar.call(carId)).called(1);
         expect(viewModel.errorMessage, isNull);
       });
 
       test('should return false when delete fails', () async {
         // arrange
         const carId = 1;
-        when(mockDeleteCar(carId)).thenAnswer((_) async => const Left(CacheFailure('Delete error')));
+        when(mockDeleteCar.call(carId)).thenAnswer((_) async => const Left(CacheFailure('Delete error')));
 
         // act
         final result = await viewModel.deleteCarById(carId);
@@ -168,20 +215,20 @@ void main() {
     group('exportCollection', () {
       test('should export collection successfully', () async {
         // arrange
-        when(mockExportCars()).thenAnswer((_) async => const Right(true));
+        when(mockExportCars.call()).thenAnswer((_) async => const Right(true));
 
         // act
         final result = await viewModel.exportCollection();
 
         // assert
         expect(result, isTrue);
-        verify(mockExportCars()).called(1);
+        verify(mockExportCars.call()).called(1);
         expect(viewModel.errorMessage, isNull);
       });
 
       test('should handle export failure', () async {
         // arrange
-        when(mockExportCars()).thenAnswer((_) async => const Left(ServerFailure('Export error')));
+        when(mockExportCars.call()).thenAnswer((_) async => const Left(ServerFailure('Export error')));
 
         // act
         final result = await viewModel.exportCollection();
@@ -198,9 +245,9 @@ void main() {
         const newFilter = CarFilter(brand: 'BMW');
         when(mockRepository.getBrands()).thenAnswer((_) async => const Right([]));
         when(mockRepository.getShapes()).thenAnswer((_) async => const Right([]));
-        when(mockGetCars(
+        when(mockGetCars.call(
           filter: newFilter,
-          limit: any(named: 'limit'),
+          limit: anyNamed('limit'),
         )).thenAnswer((_) async => const Right([]));
 
         // act
@@ -218,9 +265,9 @@ void main() {
         const query = 'BMW';
         when(mockRepository.getBrands()).thenAnswer((_) async => const Right([]));
         when(mockRepository.getShapes()).thenAnswer((_) async => const Right([]));
-        when(mockGetCars(
-          filter: any(named: 'filter'),
-          limit: any(named: 'limit'),
+        when(mockGetCars.call(
+          filter: anyNamed('filter'),
+          limit: anyNamed('limit'),
         )).thenAnswer((_) async => const Right([]));
 
         // act
@@ -232,13 +279,36 @@ void main() {
       });
     });
 
+    group('refreshCars', () {
+      test('should reset cars and reload data', () async {
+        // arrange
+        viewModel.cars.addAll(testCars); // Add some cars first
+        when(mockRepository.getBrands()).thenAnswer((_) async => const Right([]));
+        when(mockRepository.getShapes()).thenAnswer((_) async => const Right([]));
+        when(mockGetCars.call(
+          filter: anyNamed('filter'),
+          limit: anyNamed('limit'),
+        )).thenAnswer((_) async => const Right([]));
+
+        // act
+        await viewModel.refreshCars();
+
+        // assert
+        expect(viewModel.hasMoreData, isTrue);
+        verify(mockGetCars.call(
+          filter: anyNamed('filter'),
+          limit: anyNamed('limit'),
+        )).called(1);
+      });
+    });
+
     test('should clear filters correctly', () async {
       // arrange
       when(mockRepository.getBrands()).thenAnswer((_) async => const Right([]));
       when(mockRepository.getShapes()).thenAnswer((_) async => const Right([]));
-      when(mockGetCars(
-        filter: any(named: 'filter'),
-        limit: any(named: 'limit'),
+      when(mockGetCars.call(
+        filter: anyNamed('filter'),
+        limit: anyNamed('limit'),
       )).thenAnswer((_) async => const Right([]));
 
       // act

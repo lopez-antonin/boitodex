@@ -64,17 +64,17 @@ void main() {
         expect(sameFilter.sortAscending, isFalse);
       });
 
-      test('should clear fields when explicitly set to null', () {
-        final clearedFilter = originalFilter.copyWith(
-          brand: null,
-          shape: null,
+      test('should update specific fields while keeping others unchanged', () {
+        final updatedFilter = originalFilter.copyWith(
+          brand: 'Mercedes',
           nameQuery: '',
         );
 
-        expect(clearedFilter.brand, isNull);
-        expect(clearedFilter.shape, isNull);
-        expect(clearedFilter.nameQuery, equals(''));
-        expect(clearedFilter.hasActiveFilters, isFalse);
+        expect(updatedFilter.brand, equals('Mercedes'));
+        expect(updatedFilter.shape, equals('Berline')); // unchanged
+        expect(updatedFilter.nameQuery, equals(''));
+        expect(updatedFilter.sortBy, equals(SortOption.brand)); // unchanged
+        expect(updatedFilter.sortAscending, isFalse); // unchanged
       });
     });
 
@@ -109,6 +109,15 @@ void main() {
           nameQuery: 'Serie 3',
         );
         expect(filter.hasActiveFilters, isTrue);
+      });
+
+      test('should return false when filters are empty strings', () {
+        const filter = CarFilter(
+          brand: '',
+          shape: '',
+          nameQuery: '',
+        );
+        expect(filter.hasActiveFilters, isFalse);
       });
     });
 

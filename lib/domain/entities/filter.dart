@@ -23,8 +23,8 @@ class CarFilter extends Equatable {
     bool? sortAscending,
   }) {
     return CarFilter(
-      brand: brand ?? this.brand,
-      shape: shape ?? this.shape,
+      brand: brand,
+      shape: shape,
       nameQuery: nameQuery ?? this.nameQuery,
       sortBy: sortBy ?? this.sortBy,
       sortAscending: sortAscending ?? this.sortAscending,
@@ -32,8 +32,8 @@ class CarFilter extends Equatable {
   }
 
   bool get hasActiveFilters =>
-      brand != null ||
-          shape != null ||
+      (brand != null && brand!.isNotEmpty) ||
+          (shape != null && shape!.isNotEmpty) ||
           nameQuery.isNotEmpty;
 
   @override
